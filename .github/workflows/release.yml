@@ -1,0 +1,41 @@
+name: Release build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode (macOS 14 SDK)
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Build .app bundle
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Zip the app
+        run: ditto -c -k --keepParent build/DailySutra.app build/DailySutra.zip
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DailySutra.app
+          path: build/DailySutra.zip
+          if-no-files-found: error
+
+      - name: Create GitHub release on tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          gh release create "$tag" build/DailySutra.zip \
+            --title "$tag" \
+            --notes "Daily Sutra $tag. Unzip and move DailySutra.app to /Applications. macOS 14+."
