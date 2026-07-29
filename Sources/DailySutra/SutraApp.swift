@@ -20,18 +20,11 @@ func diag(_ msg: String) {
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var panel: NSPanel?
     private var statusItem: NSStatusItem?
-    private var statusButton: NSStatusBarButton?
     private var viewModel: VerseViewModel?
-    private var darkIcon: NSImage?
-    private var lightIcon: NSImage?
-    private var appearanceObservation: NSKeyValueObservation?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let vm = VerseViewModel(verses: VerseStore.load())
         viewModel = vm
-
-        darkIcon = loadMenubarImage("MenubarDark")
-        lightIcon = loadMenubarImage("MenubarLight")
 
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 400, height: 560),
@@ -56,39 +49,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = item.button {
-            statusButton = button
-            updateMenubarIcon()
+            if let url = Bundle.main.url(forResource: "MenubarIcon", withExtension: "png"),
+               let img = NSImage(contentsOf: url) {
+                img.isTemplate = true          // transparent silhouette → auto light/dark
+                img.size = NSSize(width: 26, height: 26)
+                button.image = img
+            } else {
+                button.image = NSImage(systemSymbolName: "circle.dashed", accessibilityDescription: "Daily Sutra")
+            }
             button.action = #selector(togglePanel(_:))
             button.target = self
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
         self.statusItem = item
 
-        // Swap the menubar icon when the system appearance changes.
-        appearanceObservation = NSApp.observe(\.effectiveAppearance, options: [.new]) { [weak self] _, _ in
-            DispatchQueue.main.async { self?.updateMenubarIcon() }
-        }
-
         NSApp.setActivationPolicy(.accessory)
-    }
-
-    private func loadMenubarImage(_ name: String) -> NSImage? {
-        guard let url = Bundle.main.url(forResource: name, withExtension: "png"),
-              let img = NSImage(contentsOf: url) else { return nil }
-        img.isTemplate = false
-        return img
-    }
-
-    private func updateMenubarIcon() {
-        guard let button = statusButton else { return }
-        let isDark = NSApp.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-        let img = isDark ? darkIcon : lightIcon
-        if let img {
-            img.size = NSSize(width: 16, height: 16)
-            button.image = img
-        } else {
-            button.image = NSImage(systemSymbolName: "circle.dashed", accessibilityDescription: "Daily Sutra")
-        }
     }
 
     @objc func togglePanel(_ sender: Any?) {
