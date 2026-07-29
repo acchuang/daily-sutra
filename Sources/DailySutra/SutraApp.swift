@@ -49,7 +49,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = item.button {
-            button.image = NSImage(systemSymbolName: "circle.dashed", accessibilityDescription: "Diamond Sutra")
+            if let mbURL = Bundle.main.url(forResource: "MenubarIcon", withExtension: "png"),
+               let mbImage = NSImage(contentsOf: mbURL) {
+                mbImage.isTemplate = false
+                mbImage.size = NSSize(width: 27, height: 18)
+                button.image = mbImage
+            } else {
+                button.image = NSImage(systemSymbolName: "circle.dashed", accessibilityDescription: "Daily Sutra")
+            }
             button.action = #selector(togglePanel(_:))
             button.target = self
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])

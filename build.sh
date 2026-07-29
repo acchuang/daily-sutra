@@ -17,6 +17,8 @@ BIN=$(swift build -c release --show-bin-path)/$APP
 cp "$BIN" "$BUNDLE/Contents/MacOS/$APP"
 cp Info.plist "$BUNDLE/Contents/Info.plist"
 cp Sources/DailySutra/Resources/verses.json "$BUNDLE/Contents/Resources/verses.json"
+cp Sources/DailySutra/Resources/AppIcon.icns "$BUNDLE/Contents/Resources/AppIcon.icns"
+cp Sources/DailySutra/Resources/MenubarIcon.png "$BUNDLE/Contents/Resources/MenubarIcon.png"
 
 echo ">> built $BUNDLE"
 echo "   open with: open $BUNDLE"
