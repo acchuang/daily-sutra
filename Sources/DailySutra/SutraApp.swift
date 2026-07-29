@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import ServiceManagement
 
 @main
 struct DiamondSutraBarApp: App {
@@ -82,6 +83,7 @@ final class VerseViewModel: ObservableObject {
     @Published var offset: Int = 0          // days offset from today's verse
     @Published var lang: AppLang
     @Published var fontScale: Double
+    @Published var launchAtLogin: Bool
 
     private static let kLang = "AppLang", kScale = "FontScale"
 
@@ -92,11 +94,23 @@ final class VerseViewModel: ObservableObject {
         self.lang = AppLang(rawValue: saved) ?? .en
         let raw = UserDefaults.standard.double(forKey: Self.kScale)
         self.fontScale = raw == 0 ? 1.0 : min(max(raw, 0.85), 1.8)
+        self.launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 
     func setLang(_ l: AppLang) {
         lang = l
         UserDefaults.standard.set(l.rawValue, forKey: Self.kLang)
+    }
+
+    func toggleLaunchAtLogin() {
+        let svc = SMAppService.mainApp
+        if launchAtLogin {
+            try? svc.unregister()
+        } else {
+            try? svc.register()
+        }
+        // Reflect the actual system state regardless of the call's success.
+        launchAtLogin = (svc.status == .enabled)
     }
 
     func bigger() { setScale(fontScale + 0.1) }
@@ -197,19 +211,30 @@ struct SutraView: View {
     }
 
     private var controls: some View {
-        HStack {
-            Button("‹ Prev") { viewModel.prev() }
-            Spacer()
-            Button("Today") { viewModel.reset() }
-            Button("Next ›") { viewModel.next() }
-            Divider().frame(height: 18)
-            Button { viewModel.smaller() } label: { Image(systemName: "textformat.size.smaller") }
-                .help("Smaller text")
-            Button { viewModel.bigger() } label: { Image(systemName: "textformat.size.larger") }
-                .help("Larger text")
-            Button { copyCurrent() } label: { Image(systemName: "doc.on.doc") }
-                .help("Copy verse")
-            Button("Quit") { NSApp.terminate(nil) }.help("Quit Diamond Sutra")
+        VStack(spacing: 10) {
+            HStack {
+                Toggle("Launch at Login", isOn: Binding(
+                    get: { viewModel.launchAtLogin },
+                    set: { _ in viewModel.toggleLaunchAtLogin() }
+                ))
+                .toggleStyle(.checkbox)
+                .font(.caption)
+                Spacer()
+            }
+            HStack {
+                Button("‹ Prev") { viewModel.prev() }
+                Spacer()
+                Button("Today") { viewModel.reset() }
+                Button("Next ›") { viewModel.next() }
+                Divider().frame(height: 18)
+                Button { viewModel.smaller() } label: { Image(systemName: "textformat.size.smaller") }
+                    .help("Smaller text")
+                Button { viewModel.bigger() } label: { Image(systemName: "textformat.size.larger") }
+                    .help("Larger text")
+                Button { copyCurrent() } label: { Image(systemName: "doc.on.doc") }
+                    .help("Copy verse")
+                Button("Quit") { NSApp.terminate(nil) }.help("Quit Daily Sutra")
+            }
         }
     }
 
