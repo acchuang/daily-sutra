@@ -12,12 +12,15 @@ Built with SwiftUI + AppKit. No Xcode project — Swift Package Manager only.
 
 ## Features
 
-- Menu bar icon (no Dock icon; `LSUIElement`) opens a resizable panel.
+- Menu bar app (no Dock icon; `LSUIElement`) with a custom app icon and a
+  template menubar icon that auto-adapts to light/dark mode.
+- Click the menubar icon to open a user-resizable panel (default 400×560,
+  min 320×400); closes on focus loss.
 - Daily random pick across the combined Diamond (32 品) + Heart (10 lines) pool.
 - 中 / EN language toggle (persisted).
 - A− / A+ font scale (persisted, 0.85–1.8).
 - Prev / Next / Today navigation, copy-to-clipboard, Quit.
-- Panel default 400×560, min 320×400, user-resizable; closes on focus loss.
+- **Launch at Login** toggle (uses `SMAppService`, macOS 13+).
 
 ## Build & Run
 
@@ -27,18 +30,21 @@ swift build              # debug
 open build/DailySutra.app
 ```
 
-Requires macOS 14+ and the Swift 5.9 toolchain.
+Requires macOS 13+ (built against macOS 14 SDK) and the Swift 5.9 toolchain.
 
-## Regenerating the sutra text
+## Regenerating assets
 
-`scripts/build_verses.py` re-fetches the Diamond Sutra public-domain sources
-(Wikisource Chinese, Gutenberg English) and re-segments by the 32 品. It merges
-the authored editorial fields and preserves the Heart Sutra entries, so
-re-running it won't wipe them.
+- **Sutra text** — `scripts/build_verses.py` re-fetches the Diamond Sutra
+  public-domain sources (Wikisource Chinese, Gutenberg English) and re-segments
+  by the 32 品. It merges the authored editorial fields and preserves the Heart
+  Sutra entries, so re-running it won't wipe them:
 
-```
-python3 scripts/build_verses.py Sources/DailySutra/Resources/verses.json
-```
+  ```
+  python3 scripts/build_verses.py Sources/DailySutra/Resources/verses.json
+  ```
+
+- **App icon** — `scripts/make_icon.sh` regenerates `AppIcon.icns` from the
+  source square PNG (`dailySutra.png`) via `iconutil`.
 
 ## Content & licensing
 
