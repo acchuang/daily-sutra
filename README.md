@@ -22,6 +22,36 @@ Built with SwiftUI + AppKit. No Xcode project — Swift Package Manager only.
 - Prev / Next / Today navigation, copy-to-clipboard, Quit.
 - **Launch at Login** toggle (uses `SMAppService`, macOS 13+).
 
+## Installation
+
+### From a release (easiest)
+
+1. Download `DailySutra.zip` from the latest
+   [release](https://github.com/acchuang/daily-sutra/releases).
+2. Unzip it — you get `DailySutra.app`.
+3. Move `DailySutra.app` to `/Applications` (or `~/Applications`).
+4. **First launch** — the app is unsigned, so macOS Gatekeeper will block it:
+   - Right-click `DailySutra.app` → **Open** → confirm **Open** in the dialog; or
+   - from Terminal: `xattr -dr com.apple.quarantine /Applications/DailySutra.app`
+   - then double-click to launch.
+5. A ◌ menubar icon appears. Click it to open the verse panel. Tick
+   **Launch at Login** in the footer if you want it to start automatically.
+
+### From source
+
+```
+git clone https://github.com/acchuang/daily-sutra.git
+cd daily-sutra
+./build.sh
+open build/DailySutra.app   # or drag build/DailySutra.app to /Applications
+```
+
+The same unsigned-app Gatekeeper step applies if you move it to `/Applications`.
+
+> Note: the app is not signed/notarized. The first-launch steps above let you
+> run it on your own machine; for distributing to others, signing + notarizing
+> is recommended.
+
 ## Build & Run
 
 ```
