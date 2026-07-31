@@ -96,8 +96,10 @@ final class VerseViewModel: ObservableObject {
     @Published var lang: AppLang
     @Published var fontScale: Double
     @Published var launchAtLogin: Bool
+    @Published var favorites: Set<Int>      // global indices into `verses`
+    @Published var showFavorites = false
 
-    private static let kLang = "AppLang", kScale = "FontScale"
+    private static let kLang = "AppLang", kScale = "FontScale", kFavs = "Favorites"
 
     init(verses: [Verse]) {
         self.verses = verses
@@ -107,11 +109,49 @@ final class VerseViewModel: ObservableObject {
         let raw = UserDefaults.standard.double(forKey: Self.kScale)
         self.fontScale = raw == 0 ? 1.0 : min(max(raw, 0.85), 1.8)
         self.launchAtLogin = SMAppService.mainApp.status == .enabled
+        if let data = UserDefaults.standard.data(forKey: Self.kFavs),
+           let idx = try? JSONDecoder().decode([Int].self, from: data) {
+            self.favorites = Set(idx)
+        } else {
+            self.favorites = []
+        }
     }
 
     func setLang(_ l: AppLang) {
         lang = l
         UserDefaults.standard.set(l.rawValue, forKey: Self.kLang)
+    }
+
+    // Global index of the currently displayed verse within `verses`.
+    var currentGlobalIndex: Int? {
+        guard !verses.isEmpty else { return nil }
+        let i = (todayIndex + offset) % verses.count
+        return i < 0 ? i + verses.count : i
+    }
+
+    var isCurrentFavorite: Bool {
+        guard let g = currentGlobalIndex else { return false }
+        return favorites.contains(g)
+    }
+
+    func toggleFavorite() {
+        guard let g = currentGlobalIndex else { return }
+        if favorites.contains(g) { favorites.remove(g) } else { favorites.insert(g) }
+        persistFavorites()
+    }
+
+    // Jump the daily view to a specific global index (from the favorites list).
+    func showGlobalIndex(_ g: Int) {
+        offset = g - todayIndex
+        showFavorites = false
+    }
+
+    var favoriteVerses: [Verse] { favorites.sorted().compactMap { verses.indices.contains($0) ? verses[$0] : nil } }
+
+    private func persistFavorites() {
+        if let data = try? JSONEncoder().encode(Array(favorites)) {
+            UserDefaults.standard.set(data, forKey: Self.kFavs)
+        }
     }
 
     func toggleLaunchAtLogin() {
@@ -163,41 +203,45 @@ struct SutraView: View {
         VStack(alignment: .leading, spacing: 14) {
             header
             Divider()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    if let v = viewModel.current {
-                        let isZh = viewModel.lang == .zh
-                        let s = viewModel.fontScale
-                        let verse = isZh ? v.verseZh : "\u{201C}\(v.verseEn)\u{201D}"
-                        let expl = isZh ? v.explZh : v.explEn
-                        let meaning = isZh ? v.meaningZh : v.meaning
-                        Text(verse)
-                            .font(.system(size: 19 * s, weight: .medium, design: .serif))
-                            .fixedSize(horizontal: false, vertical: true)
-                            .textSelection(.enabled)
-                        if !expl.isEmpty {
-                            Text(expl)
-                                .font(.system(size: 13.5 * s))
-                                .foregroundStyle(.secondary)
+            if viewModel.showFavorites {
+                favoritesList
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        if let v = viewModel.current {
+                            let isZh = viewModel.lang == .zh
+                            let s = viewModel.fontScale
+                            let verse = isZh ? v.verseZh : "\u{201C}\(v.verseEn)\u{201D}"
+                            let expl = isZh ? v.explZh : v.explEn
+                            let meaning = isZh ? v.meaningZh : v.meaning
+                            Text(verse)
+                                .font(.system(size: 19 * s, weight: .medium, design: .serif))
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
+                            if !expl.isEmpty {
+                                Text(expl)
+                                    .font(.system(size: 13.5 * s))
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .textSelection(.enabled)
+                            }
+                            if !meaning.isEmpty {
+                                Divider()
+                                Text(isZh ? "省思" : "Reflection")
+                                    .font(.caption2).foregroundStyle(.tertiary)
+                                Text(meaning)
+                                    .font(.system(size: 13.5 * s))
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .textSelection(.enabled)
+                            }
+                            Spacer(minLength: 0)
+                        } else {
+                            Text("No verses loaded.")
                         }
-                        if !meaning.isEmpty {
-                            Divider()
-                            Text(isZh ? "省思" : "Reflection")
-                                .font(.caption2).foregroundStyle(.tertiary)
-                            Text(meaning)
-                                .font(.system(size: 13.5 * s))
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .textSelection(.enabled)
-                        }
-                        Spacer(minLength: 0)
-                    } else {
-                        Text("No verses loaded.")
                     }
+                    .padding(.horizontal, 2)
                 }
-                .padding(.horizontal, 2)
             }
             controls
         }
@@ -249,12 +293,52 @@ struct SutraView: View {
                 iconButton("chevron.left", help: "Previous verse") { viewModel.prev() }
                 iconButton("arrow.counterclockwise", help: "Today's verse") { viewModel.reset() }
                 iconButton("chevron.right", help: "Next verse") { viewModel.next() }
+                iconButton(viewModel.isCurrentFavorite ? "heart.fill" : "heart",
+                           help: viewModel.isCurrentFavorite ? "Remove from favorites" : "Save to favorites") { viewModel.toggleFavorite() }
+                iconButton("list.bullet", help: "Favorites") { viewModel.showFavorites.toggle() }
                 Spacer()
                 iconButton("textformat.size.smaller", help: "Smaller text") { viewModel.smaller() }
                 iconButton("textformat.size.larger", help: "Larger text") { viewModel.bigger() }
                 iconButton("doc.on.doc", help: "Copy verse") { copyCurrent() }
                 iconButton("power", help: "Quit Daily Sutra") { NSApp.terminate(nil) }
             }
+        }
+    }
+
+    private var favoritesList: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 2) {
+                if viewModel.favoriteVerses.isEmpty {
+                    Text("No favorites yet. Tap the heart on a verse to save it.")
+                        .font(.caption).foregroundStyle(.secondary)
+                        .padding(.vertical, 20)
+                } else {
+                    ForEach(viewModel.favoriteVerses) { v in
+                        let firstLine = (viewModel.lang == .zh ? v.verseZh : v.verseEn)
+                            .components(separatedBy: "\n").first ?? ""
+                        Button {
+                            if let g = viewModel.favorites.first(where: { viewModel.verses[$0].id == v.id }) {
+                                viewModel.showGlobalIndex(g)
+                            }
+                        } label: {
+                            HStack(alignment: .top) {
+                                Text(firstLine)
+                                    .font(.system(size: 13, design: .serif))
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption2).foregroundStyle(.tertiary)
+                            }
+                            .contentShape(Rectangle())
+                            .padding(.vertical, 6)
+                        }
+                        .buttonStyle(.plain)
+                        Divider()
+                    }
+                }
+            }
+            .padding(.horizontal, 2)
         }
     }
 
