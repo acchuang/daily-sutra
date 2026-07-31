@@ -5,8 +5,10 @@ let package = Package(
     name: "DailySutra",
     platforms: [.macOS(.v14)],
     targets: [
+        .target(name: "SutraKit", path: "Sources/SutraKit"),
         .executableTarget(
             name: "DailySutra",
+            dependencies: ["SutraKit"],
             path: "Sources/DailySutra",
             resources: [.copy("Resources/verses.json")]
         )

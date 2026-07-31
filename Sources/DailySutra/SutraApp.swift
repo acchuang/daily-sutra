@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 import ServiceManagement
+import SutraKit
 
 @main
 struct DiamondSutraBarApp: App {
@@ -8,13 +9,9 @@ struct DiamondSutraBarApp: App {
     var body: some Scene { Settings { EmptyView() } }
 }
 
-func diag(_ msg: String) {
-    let line = "\(Date())  \(msg)\n"
-    if let h = FileHandle(forWritingAtPath: "/tmp/dsb_diag.txt") {
-        h.seekToEndOfFile(); h.write(Data(line.utf8)); h.closeFile()
-    } else {
-        try? line.write(toFile: "/tmp/dsb_diag.txt", atomically: true, encoding: .utf8)
-    }
+enum AppLang: String, CaseIterable {
+    case en, zh
+    var label: String { self == .en ? "EN" : "中" }
 }
 
 final class CardPanel: NSPanel {
@@ -172,7 +169,7 @@ final class VerseViewModel: ObservableObject {
         UserDefaults.standard.set(fontScale, forKey: Self.kScale)
     }
 
-    var todayIndex: Int { seededDailyIndex() % max(verses.count, 1) }
+    var todayIndex: Int { DailyPick.index(count: verses.count) }
 
     var current: Verse? {
         guard !verses.isEmpty else { return nil }
@@ -183,17 +180,6 @@ final class VerseViewModel: ObservableObject {
     func prev() { offset -= 1 }
     func next() { offset += 1 }
     func reset() { offset = 0 }
-
-    // Deterministic per-date pseudo-random pick across the whole pool
-    // (Diamond + Heart): same verse all day, a new random one tomorrow.
-    private func seededDailyIndex() -> Int {
-        let cal = Calendar(identifier: .gregorian)
-        let c = cal.dateComponents([.year, .month, .day], from: Date())
-        let y = c.year ?? 0, m = c.month ?? 0, d = c.day ?? 0
-        var s = UInt64(bitPattern: Int64(y * 10000 + m * 100 + d))
-        s ^= s << 13; s ^= s >> 7; s ^= s << 17   // xorshift64
-        return Int(s % UInt64(max(verses.count, 1)))
-    }
 }
 
 struct SutraView: View {
