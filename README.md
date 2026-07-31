@@ -1,5 +1,7 @@
 # Daily Sutra
 
+<img src="docs/screenshot.png" width="400" alt="Daily Sutra menu bar panel" />
+
 A macOS menu bar app that shows a daily contemplative verse drawn randomly from
 the **Diamond Sutra** (金剛般若波羅蜜經) and the **Heart Sutra** (般若波羅蜜多心經).
 
@@ -20,6 +22,7 @@ Built with SwiftUI + AppKit. No Xcode project — Swift Package Manager only.
 - 中 / EN language toggle (persisted).
 - A− / A+ font scale (persisted, 0.85–1.8).
 - Prev / Next / Today navigation, copy-to-clipboard, Quit.
+- **Favorites** — heart a verse to save it; open the list from the footer (persisted).
 - **Launch at Login** toggle (uses `SMAppService`, macOS 13+).
 
 ## Installation
