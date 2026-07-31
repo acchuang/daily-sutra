@@ -17,6 +17,11 @@ func diag(_ msg: String) {
     }
 }
 
+final class CardPanel: NSPanel {
+    override var canBecomeKey: Bool { true }    // needed for text selection
+    override var canBecomeMain: Bool { false }
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var panel: NSPanel?
     private var statusItem: NSStatusItem?
@@ -26,13 +31,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let vm = VerseViewModel(verses: VerseStore.load())
         viewModel = vm
 
-        let panel = NSPanel(
+        let panel = CardPanel(
             contentRect: NSRect(x: 0, y: 0, width: 400, height: 560),
-            styleMask: [.titled, .closable, .resizable, .utilityWindow, .fullSizeContentView],
+            styleMask: [.borderless, .resizable],
             backing: .buffered, defer: false)
-        panel.titleVisibility = .hidden
-        panel.titlebarAppearsTransparent = true
-        panel.isMovableByWindowBackground = false
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = true
         panel.isFloatingPanel = true
         panel.hidesOnDeactivate = true
         panel.level = .floating
@@ -167,12 +172,12 @@ struct SutraView: View {
                         let expl = isZh ? v.explZh : v.explEn
                         let meaning = isZh ? v.meaningZh : v.meaning
                         Text(verse)
-                            .font(.system(size: 17 * s, weight: .medium))
+                            .font(.system(size: 19 * s, weight: .medium, design: .serif))
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
                         if !expl.isEmpty {
                             Text(expl)
-                                .font(.system(size: 13 * s))
+                                .font(.system(size: 13.5 * s))
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
@@ -182,7 +187,7 @@ struct SutraView: View {
                             Text(isZh ? "省思" : "Reflection")
                                 .font(.caption2).foregroundStyle(.tertiary)
                             Text(meaning)
-                                .font(.system(size: 13 * s))
+                                .font(.system(size: 13.5 * s))
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
@@ -194,27 +199,39 @@ struct SutraView: View {
                 }
                 .padding(.horizontal, 2)
             }
-            Divider()
             controls
         }
-        .padding(16)
+        .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     private var header: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Daily Sutra Verse")
-                    .font(.system(size: 15, weight: .semibold))
-                Text("— \(weekday())").font(.caption).foregroundStyle(.secondary)
+        HStack(spacing: 10) {
+            if let icon = headerIcon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .renderingMode(.template)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 20, height: 20)
             }
+            Text("Daily Sutra")
+                .font(.system(size: 15, weight: .semibold, design: .serif))
             Spacer()
+            Text(weekday())
+                .font(.caption).foregroundStyle(.tertiary)
             Picker("", selection: $viewModel.lang) {
                 ForEach(AppLang.allCases, id: \.self) { l in Text(l.label).tag(l) }
             }
             .pickerStyle(.segmented).frame(width: 90)
             .onChange(of: viewModel.lang) { _, new in viewModel.setLang(new) }
         }
+    }
+
+    private var headerIcon: NSImage? {
+        guard let url = Bundle.main.url(forResource: "MenubarIcon", withExtension: "png"),
+              let img = NSImage(contentsOf: url) else { return nil }
+        return img
     }
 
     private var controls: some View {
@@ -228,21 +245,29 @@ struct SutraView: View {
                 .font(.caption)
                 Spacer()
             }
-            HStack {
-                Button("‹ Prev") { viewModel.prev() }
+            HStack(spacing: 8) {
+                iconButton("chevron.left", help: "Previous verse") { viewModel.prev() }
+                iconButton("arrow.counterclockwise", help: "Today's verse") { viewModel.reset() }
+                iconButton("chevron.right", help: "Next verse") { viewModel.next() }
                 Spacer()
-                Button("Today") { viewModel.reset() }
-                Button("Next ›") { viewModel.next() }
-                Divider().frame(height: 18)
-                Button { viewModel.smaller() } label: { Image(systemName: "textformat.size.smaller") }
-                    .help("Smaller text")
-                Button { viewModel.bigger() } label: { Image(systemName: "textformat.size.larger") }
-                    .help("Larger text")
-                Button { copyCurrent() } label: { Image(systemName: "doc.on.doc") }
-                    .help("Copy verse")
-                Button("Quit") { NSApp.terminate(nil) }.help("Quit Daily Sutra")
+                iconButton("textformat.size.smaller", help: "Smaller text") { viewModel.smaller() }
+                iconButton("textformat.size.larger", help: "Larger text") { viewModel.bigger() }
+                iconButton("doc.on.doc", help: "Copy verse") { copyCurrent() }
+                iconButton("power", help: "Quit Daily Sutra") { NSApp.terminate(nil) }
             }
         }
+    }
+
+    private func iconButton(_ sf: String, help: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: sf)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.secondary)
+                .frame(width: 26, height: 26)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderless)
+        .help(help)
     }
 
     private func weekday() -> String {
