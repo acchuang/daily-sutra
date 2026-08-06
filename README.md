@@ -7,8 +7,9 @@ the **Diamond Sutra** (金剛般若波羅蜜經) and the **Heart Sutra** (般若
 
 Each day the app picks one verse (deterministic per date, so the same verse
 shows all day and a new one appears tomorrow) and shows the classical Chinese
-line, a modern English verse, a plain-language explanation, and a short
-reflection. The app does not show which sutra a verse is from.
+line (中) or a modern English verse (EN), a plain-language explanation merged with
+a short reflection, and a per-verse blessing. The app does not show which sutra
+a verse is from.
 
 Built with SwiftUI + AppKit. No Xcode project — Swift Package Manager only.
 
@@ -17,10 +18,20 @@ Built with SwiftUI + AppKit. No Xcode project — Swift Package Manager only.
 - Menu bar app (no Dock icon; `LSUIElement`) with a custom app icon and a
   template menubar icon that auto-adapts to light/dark mode.
 - Click the menubar icon to open a user-resizable panel (default 400×560,
-  min 320×400); closes on focus loss.
-- Daily random pick across the combined Diamond (32 品) + Heart (10 lines) pool.
+  min 320×400) you can drag anywhere by its body. Closes on focus loss, or pin
+  it to keep it open.
+- Header reads `<weekday> — Chapter <n>` (`<weekday> — 第<n>章` in 中); the
+  sutra a verse is from stays hidden.
+- Each verse shows the pull-quote (classical line in 中, English verse in EN),
+  one `Explanation:` / `解釋：` paragraph merging explanation + reflection, and a
+  per-verse blessing that ends with a theme-matched emoji.
+- Daily deterministic pick across the combined Diamond (32 品) + Heart (10 lines)
+  pool; it re-rolls at midnight while the app stays open.
 - 中 / EN language toggle (persisted).
 - A− / A+ font scale (persisted, 0.85–1.8).
+- Keyboard shortcuts while the panel is open: ←/→ prev/next, `T` today,
+  `Esc` close, `⌘C` copy.
+- Right-click the menubar icon for a menu: Show Verse / Copy Today's Verse / Quit.
 - Prev / Next / Today navigation, copy-to-clipboard, Quit.
 - **Favorites** — heart a verse to save it; open the list from the footer (persisted).
 - **Launch at Login** toggle (uses `SMAppService`, macOS 13+).
@@ -37,7 +48,7 @@ Built with SwiftUI + AppKit. No Xcode project — Swift Package Manager only.
    - Right-click `DailySutra.app` → **Open** → confirm **Open** in the dialog; or
    - from Terminal: `xattr -dr com.apple.quarantine /Applications/DailySutra.app`
    - then double-click to launch.
-5. A ◌ menubar icon appears. Click it to open the verse panel. Tick
+5. A menubar icon appears. Click it to open the verse panel. Tick
    **Launch at Login** in the footer if you want it to start automatically.
 
 ### From source
@@ -59,6 +70,7 @@ The same unsigned-app Gatekeeper step applies if you move it to `/Applications`.
 
 ```
 swift build              # debug
+swift test               # DailyPick deterministic-pick self-check
 ./build.sh               # release + assemble .app bundle
 open build/DailySutra.app
 ```
@@ -78,6 +90,11 @@ Requires macOS 13+ (built against macOS 14 SDK) and the Swift 5.9 toolchain.
 
 - **App icon** — `scripts/make_icon.sh` regenerates `AppIcon.icns` from the
   source square PNG (`dailySutra.png`) via `iconutil`.
+
+- **Menubar icon** — `scripts/make_menubar_icon.py` derives the bundled
+  `MenubarIcon.png` template from `menubaricon.png` (a dark glyph on an opaque
+  white background): luminance becomes alpha so it renders as an auto-light/dark
+  silhouette. Run it after replacing `menubaricon.png`.
 
 ## Content & licensing
 
