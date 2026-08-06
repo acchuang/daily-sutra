@@ -10,7 +10,16 @@ let package = Package(
             name: "DailySutra",
             dependencies: ["SutraKit"],
             path: "Sources/DailySutra",
-            resources: [.copy("Resources/verses.json")]
-        )
+            resources: [
+                .copy("Resources/verses.json"),
+                .copy("Resources/AppIcon.icns"),
+                .copy("Resources/MenubarIcon.png"),
+            ]
+        ),
+        .testTarget(
+            name: "DailySutraTests",
+            dependencies: ["SutraKit"],
+            path: "Tests/DailySutraTests"
+        ),
     ]
 )

@@ -14,12 +14,16 @@ public struct Verse: Codable, Identifiable {
     public let explZh: String      // plain-language explanation (modern traditional Chinese)
     public let meaning: String     // reflective meaning (English, app author's commentary)
     public let meaningZh: String   // reflective meaning (modern traditional Chinese)
+    public let blessing: String        // closing blessing (English), with {weekday} placeholder
+    public let blessingZh: String      // closing blessing (modern traditional Chinese), with {weekday} placeholder
 
     public init(index: Int, sutra: String, titleZh: String, titleEn: String, zh: String, en: String,
-                verseEn: String, verseZh: String, explEn: String, explZh: String, meaning: String, meaningZh: String) {
+                verseEn: String, verseZh: String, explEn: String, explZh: String, meaning: String, meaningZh: String,
+                blessing: String = "", blessingZh: String = "") {
         self.index = index; self.sutra = sutra; self.titleZh = titleZh; self.titleEn = titleEn
         self.zh = zh; self.en = en; self.verseEn = verseEn; self.verseZh = verseZh
         self.explEn = explEn; self.explZh = explZh; self.meaning = meaning; self.meaningZh = meaningZh
+        self.blessing = blessing; self.blessingZh = blessingZh
     }
 }
 
