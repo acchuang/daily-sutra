@@ -75,7 +75,7 @@ swift test               # DailyPick deterministic-pick self-check
 open build/DailySutra.app
 ```
 
-Requires macOS 13+ (built against macOS 14 SDK) and the Swift 5.9 toolchain.
+Requires macOS 14+ and the Swift 5.9 toolchain.
 
 ## Regenerating assets
 

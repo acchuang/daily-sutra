@@ -130,11 +130,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     private func openPanel() {
         guard let button = statusItem?.button, let panel else { return }
-        // Place panel top-left just under the status item button.
+        // Place panel top-left just under the status item button, clamped to screen bounds.
         if let btnFrame = button.window?.convertToScreen(button.bounds) {
             var origin = btnFrame.origin
             origin.y -= 2                       // small gap below the menu bar
-            origin.x = max(origin.x, 0)
+            let screen = button.window?.screen ?? NSScreen.main
+            let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1920, height: 1080)
+            origin.x = min(max(origin.x, visible.minX), visible.maxX - panel.frame.width)
             panel.setFrameTopLeftPoint(origin)
         }
         panel.makeKeyAndOrderFront(nil)
@@ -166,7 +168,7 @@ final class VerseViewModel: ObservableObject {
     @Published var lang: AppLang
     @Published var fontScale: Double
     @Published var launchAtLogin: Bool
-    @Published var favorites: Set<Int>      // global indices into `verses`
+    @Published var favorites: Set<String>      // verse.id strings e.g. "diamond_1"
     @Published var showFavorites = false
     @Published var pinned = false      // keep panel open across focus loss
 
@@ -182,9 +184,19 @@ final class VerseViewModel: ObservableObject {
         let raw = UserDefaults.standard.double(forKey: Self.kScale)
         self.fontScale = raw == 0 ? 1.0 : min(max(raw, 0.85), 1.8)
         self.launchAtLogin = SMAppService.mainApp.status == .enabled
-        if let data = UserDefaults.standard.data(forKey: Self.kFavs),
-           let idx = try? JSONDecoder().decode([Int].self, from: data) {
-            self.favorites = Set(idx)
+        if let data = UserDefaults.standard.data(forKey: Self.kFavs) {
+            if let ids = try? JSONDecoder().decode([String].self, from: data) {
+                self.favorites = Set(ids)
+            } else if let legacyIndices = try? JSONDecoder().decode([Int].self, from: data) {
+                // Migrate legacy integer array indices to stable IDs
+                let ids = legacyIndices.compactMap { verses.indices.contains($0) ? verses[$0].id : nil }
+                self.favorites = Set(ids)
+                if let migrated = try? JSONEncoder().encode(Array(self.favorites)) {
+                    UserDefaults.standard.set(migrated, forKey: Self.kFavs)
+                }
+            } else {
+                self.favorites = []
+            }
         } else {
             self.favorites = []
         }
@@ -216,31 +228,32 @@ final class VerseViewModel: ObservableObject {
         UserDefaults.standard.set(l.rawValue, forKey: Self.kLang)
     }
 
-    // Global index of the currently displayed verse within `verses`.
-    var currentGlobalIndex: Int? {
-        guard !verses.isEmpty else { return nil }
-        let i = (todayIndex + offset) % verses.count
-        return i < 0 ? i + verses.count : i
-    }
-
     var isCurrentFavorite: Bool {
-        guard let g = currentGlobalIndex else { return false }
-        return favorites.contains(g)
+        guard let v = current else { return false }
+        return favorites.contains(v.id)
     }
 
     func toggleFavorite() {
-        guard let g = currentGlobalIndex else { return }
-        if favorites.contains(g) { favorites.remove(g) } else { favorites.insert(g) }
+        guard let v = current else { return }
+        if favorites.contains(v.id) {
+            favorites.remove(v.id)
+        } else {
+            favorites.insert(v.id)
+        }
         persistFavorites()
     }
 
-    // Jump the daily view to a specific global index (from the favorites list).
-    func showGlobalIndex(_ g: Int) {
-        offset = g - todayIndex
-        showFavorites = false
+    // Jump the daily view to a specific verse ID (from the favorites list).
+    func showVerse(id: String) {
+        if let g = verses.firstIndex(where: { $0.id == id }) {
+            offset = g - todayIndex
+            showFavorites = false
+        }
     }
 
-    var favoriteVerses: [Verse] { favorites.sorted().compactMap { verses.indices.contains($0) ? verses[$0] : nil } }
+    var favoriteVerses: [Verse] {
+        verses.filter { favorites.contains($0.id) }
+    }
 
     private func persistFavorites() {
         if let data = try? JSONEncoder().encode(Array(favorites)) {
@@ -371,9 +384,15 @@ struct SutraView: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
+    private static let cachedHeaderIcon: NSImage? = {
+        guard let url = Bundle.main.url(forResource: "MenubarIcon", withExtension: "png"),
+              let img = NSImage(contentsOf: url) else { return nil }
+        return img
+    }()
+
     private var header: some View {
         HStack(spacing: 10) {
-            if let icon = headerIcon {
+            if let icon = Self.cachedHeaderIcon {
                 Image(nsImage: icon)
                     .resizable()
                     .renderingMode(.template)
@@ -390,12 +409,6 @@ struct SutraView: View {
             .pickerStyle(.segmented).frame(width: 90)
             .onChange(of: viewModel.lang) { _, new in viewModel.setLang(new) }
         }
-    }
-
-    private var headerIcon: NSImage? {
-        guard let url = Bundle.main.url(forResource: "MenubarIcon", withExtension: "png"),
-              let img = NSImage(contentsOf: url) else { return nil }
-        return img
     }
 
     private var controls: some View {
@@ -439,9 +452,7 @@ struct SutraView: View {
                         let firstLine = (viewModel.lang == .zh ? v.verseZh : v.verseEn)
                             .components(separatedBy: "\n").first ?? ""
                         Button {
-                            if let g = viewModel.favorites.first(where: { viewModel.verses[$0].id == v.id }) {
-                                viewModel.showGlobalIndex(g)
-                            }
+                            viewModel.showVerse(id: v.id)
                         } label: {
                             HStack(alignment: .top) {
                                 Text(firstLine)

@@ -1,9 +1,12 @@
 import Foundation
+import os
 
-public struct Verse: Codable, Identifiable {
+private let logger = Logger(subsystem: "com.acchuang.daily-sutra", category: "SutraKit")
+
+public struct Verse: Codable, Identifiable, Equatable, Hashable {
     public let index: Int          // 1...N within its sutra
     public let sutra: String        // "diamond" | "heart"
-    public var id: Int { index }
+    public var id: String { "\(sutra)_\(index)" }
     public let titleZh: String     // 品名 e.g. 法會因由分第一
     public let titleEn: String     // section label
     public let zh: String          // classical Chinese full passage (Kumārajīva / Xuanzang, PD)
@@ -27,26 +30,24 @@ public struct Verse: Codable, Identifiable {
     }
 }
 
-func sutraKitDiag(_ msg: String) {
-    let line = "\(Date())  \(msg)\n"
-    if let h = FileHandle(forWritingAtPath: "/tmp/dsb_diag.txt") {
-        h.seekToEndOfFile(); h.write(Data(line.utf8)); h.closeFile()
-    } else {
-        try? line.write(toFile: "/tmp/dsb_diag.txt", atomically: true, encoding: .utf8)
-    }
-}
-
 public enum VerseStore {
-    public static func load() -> [Verse] {
-        guard let url = Bundle.main.url(forResource: "verses", withExtension: "json"),
-              let data = try? Data(contentsOf: url) else {
-            sutraKitDiag("VerseStore: resource not found")
+    public static func load(from bundle: Bundle = .main) -> [Verse] {
+        guard let url = bundle.url(forResource: "verses", withExtension: "json") else {
+            logger.warning("VerseStore: resource 'verses.json' not found in bundle \(bundle)")
+            return fallback()
+        }
+        return load(from: url)
+    }
+
+    public static func load(from url: URL) -> [Verse] {
+        guard let data = try? Data(contentsOf: url) else {
+            logger.warning("VerseStore: could not read data from \(url)")
             return fallback()
         }
         do {
             return try JSONDecoder().decode([Verse].self, from: data)
         } catch {
-            sutraKitDiag("VerseStore: decode failed: \(error)")
+            logger.error("VerseStore: decode failed: \(error.localizedDescription)")
             return fallback()
         }
     }

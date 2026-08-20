@@ -20,5 +20,8 @@ cp Sources/DailySutra/Resources/verses.json "$BUNDLE/Contents/Resources/verses.j
 cp Sources/DailySutra/Resources/AppIcon.icns "$BUNDLE/Contents/Resources/AppIcon.icns"
 cp Sources/DailySutra/Resources/MenubarIcon.png "$BUNDLE/Contents/Resources/MenubarIcon.png"
 
+echo ">> signing $BUNDLE (ad-hoc)"
+codesign -s - --force --deep "$BUNDLE" 2>/dev/null || codesign -s - --force "$BUNDLE"
+
 echo ">> built $BUNDLE"
 echo "   open with: open $BUNDLE"

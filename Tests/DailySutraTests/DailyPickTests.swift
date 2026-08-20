@@ -50,4 +50,31 @@ final class DailyPickTests: XCTestCase {
         // the day-to-day seeding barely moves.
         XCTAssertLessThan(sameAsPrevious, 20, "too many adjacent-day repeats")
     }
+
+    func testVerseIDUniquenessAndJSONValidation() throws {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let rootURL = testFileURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let jsonURL = rootURL.appendingPathComponent("Sources/DailySutra/Resources/verses.json")
+        let verses = VerseStore.load(from: jsonURL)
+
+        XCTAssertEqual(verses.count, 42, "Should load all 42 verses (32 Diamond + 10 Heart)")
+
+        let ids = verses.map { $0.id }
+        let uniqueIDs = Set(ids)
+        XCTAssertEqual(ids.count, uniqueIDs.count, "Every verse must have a unique ID across the entire pool")
+
+        let diamondVerses = verses.filter { $0.sutra == "diamond" }
+        let heartVerses = verses.filter { $0.sutra == "heart" }
+        XCTAssertEqual(diamondVerses.count, 32, "Expected 32 Diamond Sutra chapters")
+        XCTAssertEqual(heartVerses.count, 10, "Expected 10 Heart Sutra sections")
+
+        for verse in verses {
+            XCTAssertFalse(verse.id.isEmpty, "ID cannot be empty")
+            XCTAssertFalse(verse.zh.isEmpty, "Classical Chinese passage cannot be empty: \(verse.id)")
+            XCTAssertFalse(verse.verseZh.isEmpty, "Classical Chinese verse line cannot be empty: \(verse.id)")
+            XCTAssertFalse(verse.verseEn.isEmpty, "English verse line cannot be empty: \(verse.id)")
+            XCTAssertFalse(verse.explZh.isEmpty, "Chinese explanation cannot be empty: \(verse.id)")
+            XCTAssertFalse(verse.explEn.isEmpty, "English explanation cannot be empty: \(verse.id)")
+        }
+    }
 }

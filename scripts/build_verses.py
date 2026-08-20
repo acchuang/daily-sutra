@@ -4,7 +4,6 @@ into verses.json for the menu bar app. No sutra text is authored here — only
 mechanical extraction from verified PD sources."""
 import json, re, sys, urllib.request
 
-CN_URL = "https://zh.wikisource.org/w/index.php?title=%E9%91%BC%E6%91%A9%E7%BE%85%E4%BB%80%E8%AD%AF%E6%9C%AC%E9%87%91%E5%89%9B%E8%88%AC%E8%8B%A5%E6%B3%A2%E7%BE%85%E8%9C%9C%E7%B6%93&action=raw"
 CN_URL = "https://zh.wikisource.org/w/index.php?title=%E9%87%91%E5%89%9B%E8%88%AC%E8%8B%A5%E6%B3%A2%E7%BE%85%E8%9C%9C%E7%B6%93_(%E9%B3%A9%E6%91%A9%E7%BE%85%E4%BB%80)&action=raw"
 EN_URL = "https://www.gutenberg.org/cache/epub/64623/pg64623.txt"
 
