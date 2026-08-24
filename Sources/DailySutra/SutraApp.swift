@@ -157,7 +157,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     @MainActor @objc func menuShowVerse(_ s: Any?) { openPanel() }
-    @MainActor @objc func menuCopyVerse(_ s: Any?) { viewModel?.copyFormatted() }
+    @MainActor @objc func menuCopyVerse(_ s: Any?) { viewModel?.copyTodayVerse() }
     @objc func menuQuit(_ s: Any?) { NSApp.terminate(nil) }
 }
 
@@ -170,6 +170,7 @@ final class VerseViewModel: ObservableObject {
     @Published var launchAtLogin: Bool
     @Published var favorites: Set<String>      // verse.id strings e.g. "diamond_1"
     @Published var showFavorites = false
+    @Published var showHistory = false
     @Published var pinned = false      // keep panel open across focus loss
 
     private static let kLang = "AppLang", kScale = "FontScale", kFavs = "Favorites"
@@ -251,6 +252,19 @@ final class VerseViewModel: ObservableObject {
         }
     }
 
+    // Jump to the verse that would have shown on a given date — the daily
+    // pick is a pure function of the date, so this needs no stored history.
+    func jumpToDate(_ date: Date) {
+        guard !verses.isEmpty else { return }
+        offset = DailyPick.index(count: verses.count, for: date) - todayIndex
+        showHistory = false
+    }
+
+    func verse(on date: Date) -> Verse? {
+        guard !verses.isEmpty else { return nil }
+        return verses[DailyPick.index(count: verses.count, for: date)]
+    }
+
     var favoriteVerses: [Verse] {
         verses.filter { favorites.contains($0.id) }
     }
@@ -305,10 +319,12 @@ final class VerseViewModel: ObservableObject {
         return lang == .zh ? "\(weekdayZh) — 第\(v.index)章" : "\(weekdayEn) — Chapter \(v.index)"
     }
 
-    var blessing: String {
+    var blessing: String { blessing(for: current) }
+
+    private func blessing(for v: Verse?) -> String {
         let isZh = lang == .zh
         let day = isZh ? weekdayZh : weekdayEn
-        if let v = current {
+        if let v {
             let raw = isZh ? v.blessingZh : v.blessing
             if !raw.isEmpty { return raw.replacingOccurrences(of: "{weekday}", with: day) }
         }
@@ -317,6 +333,18 @@ final class VerseViewModel: ObservableObject {
 
     func copyFormatted() {
         guard let v = current else { return }
+        copy(v)
+    }
+
+    // Always copies today's actual pick, independent of prev/next browsing —
+    // used by the "Copy Today's Verse" menu item so its label stays true even
+    // if the panel is currently showing a browsed-to verse.
+    func copyTodayVerse() {
+        guard !verses.isEmpty else { return }
+        copy(verses[todayIndex])
+    }
+
+    private func copy(_ v: Verse) {
         let isZh = lang == .zh
         let verse = isZh ? v.verseZh : "\u{201C}\(v.verseEn)\u{201D}"
         let expl = isZh ? v.explZh : v.explEn
@@ -325,7 +353,7 @@ final class VerseViewModel: ObservableObject {
         let body = isZh
             ? "解釋：\(expl)\(meaning.isEmpty ? "" : " \(meaning)")"
             : "Explanation: \(expl)\(meaning.isEmpty ? "" : " \(meaning)")"
-        let s = "\(title)\n\n\(verse)\n\n\(body)\n\n\(blessing)"
+        let s = "\(title)\n\n\(verse)\n\n\(body)\n\n\(blessing(for: v))"
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(s, forType: .string)
     }
@@ -333,12 +361,15 @@ final class VerseViewModel: ObservableObject {
 
 struct SutraView: View {
     @ObservedObject var viewModel: VerseViewModel
+    @State private var historyDate = Date()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             header
             Divider()
-            if viewModel.showFavorites {
+            if viewModel.showHistory {
+                historyView
+            } else if viewModel.showFavorites {
                 favoritesList
             } else {
                 ScrollView {
@@ -428,7 +459,14 @@ struct SutraView: View {
                 iconButton("chevron.right", help: "Next verse") { viewModel.next() }
                 iconButton(viewModel.isCurrentFavorite ? "heart.fill" : "heart",
                            help: viewModel.isCurrentFavorite ? "Remove from favorites" : "Save to favorites") { viewModel.toggleFavorite() }
-                iconButton("list.bullet", help: "Favorites") { viewModel.showFavorites.toggle() }
+                iconButton("list.bullet", help: "Favorites") {
+                    viewModel.showHistory = false
+                    viewModel.showFavorites.toggle()
+                }
+                iconButton("calendar", help: "Browse by date") {
+                    viewModel.showFavorites = false
+                    viewModel.showHistory.toggle()
+                }
                 Spacer()
                 iconButton("textformat.size.smaller", help: "Smaller text") { viewModel.smaller() }
                 iconButton("textformat.size.larger", help: "Larger text") { viewModel.bigger() }
@@ -437,6 +475,28 @@ struct SutraView: View {
                            help: viewModel.pinned ? "Unpin — hide on focus loss" : "Pin — keep open") { viewModel.togglePin() }
                 iconButton("power", help: "Quit Daily Sutra") { NSApp.terminate(nil) }
             }
+        }
+    }
+
+    private var historyView: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            DatePicker("", selection: Binding(
+                get: { historyDate },
+                set: { historyDate = $0 }
+            ), in: ...Date(), displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .labelsHidden()
+            if let v = viewModel.verse(on: historyDate) {
+                let isZh = viewModel.lang == .zh
+                let firstLine = (isZh ? v.verseZh : v.verseEn).components(separatedBy: "\n").first ?? ""
+                Text(firstLine)
+                    .font(.system(size: 12, design: .serif))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            Button("Go to this date") { viewModel.jumpToDate(historyDate) }
+                .buttonStyle(.borderless)
+            Spacer(minLength: 0)
         }
     }
 
