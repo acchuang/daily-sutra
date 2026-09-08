@@ -15,6 +15,14 @@ enum AppLang: String, CaseIterable {
     var label: String { self == .en ? "EN" : "中" }
 }
 
+/// What the panel is showing. A day resolves to a verse through DailyPick, so
+/// prev/next move by real calendar days and the weekday shown matches the verse.
+/// A favorite has no date of its own, so it is carried directly.
+enum Showing: Equatable {
+    case day(Date)
+    case verse(Verse)
+}
+
 final class CardPanel: NSPanel {
     override var canBecomeKey: Bool { true }    // needed for text selection
     override var canBecomeMain: Bool { false }
@@ -164,7 +172,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 @MainActor
 final class VerseViewModel: ObservableObject {
     @Published var verses: [Verse]
-    @Published var offset: Int = 0          // days offset from today's verse
+    @Published var showing: Showing = .day(Date())
     @Published var lang: AppLang
     @Published var fontScale: Double
     @Published var launchAtLogin: Bool
@@ -179,7 +187,6 @@ final class VerseViewModel: ObservableObject {
 
     init(verses: [Verse]) {
         self.verses = verses
-        self.offset = 0
         let saved = UserDefaults.standard.string(forKey: Self.kLang) ?? "en"
         self.lang = AppLang(rawValue: saved) ?? .en
         let raw = UserDefaults.standard.double(forKey: Self.kScale)
@@ -220,8 +227,8 @@ final class VerseViewModel: ObservableObject {
         let k = Self.dayKey(Date())
         guard k != currentDay else { return }
         currentDay = k
-        offset = 0          // new day → today's pick
-        objectWillChange.send()   // force refresh even if offset was already 0
+        // Re-point a date view at the new today. A favorite being read stays put.
+        if case .day = showing { showing = .day(Date()) }
     }
 
     func setLang(_ l: AppLang) {
@@ -244,19 +251,16 @@ final class VerseViewModel: ObservableObject {
         persistFavorites()
     }
 
-    // Jump the daily view to a specific verse ID (from the favorites list).
-    func showVerse(id: String) {
-        if let g = verses.firstIndex(where: { $0.id == id }) {
-            offset = g - todayIndex
-            showFavorites = false
-        }
+    // Show a saved favorite directly — it belongs to no particular day.
+    func show(_ v: Verse) {
+        showing = .verse(v)
+        showFavorites = false
     }
 
     // Jump to the verse that would have shown on a given date — the daily
     // pick is a pure function of the date, so this needs no stored history.
     func jumpToDate(_ date: Date) {
-        guard !verses.isEmpty else { return }
-        offset = DailyPick.index(count: verses.count, for: date) - todayIndex
+        showing = .day(date)
         showHistory = false
     }
 
@@ -293,69 +297,52 @@ final class VerseViewModel: ObservableObject {
         UserDefaults.standard.set(fontScale, forKey: Self.kScale)
     }
 
-    var todayIndex: Int { DailyPick.index(count: verses.count) }
+    // The date whose verse is on screen. A favorite has none, so its weekday
+    // and blessing fall back to today.
+    var displayedDate: Date {
+        if case .day(let d) = showing { return d }
+        return Date()
+    }
 
     var current: Verse? {
-        guard !verses.isEmpty else { return nil }
-        let i = (todayIndex + offset) % verses.count
-        return verses[i < 0 ? i + verses.count : i]
+        if case .verse(let v) = showing { return v }
+        return verse(on: displayedDate)
     }
 
-    func prev() { offset -= 1 }
-    func next() { offset += 1 }
-    func reset() { offset = 0 }
+    var todayVerse: Verse? { verse(on: Date()) }
+
+    private func shiftDay(_ n: Int) {
+        let cal = Calendar.current
+        let base = cal.startOfDay(for: displayedDate)
+        showing = .day(cal.date(byAdding: .day, value: n, to: base) ?? base)
+    }
+
+    func prev() { shiftDay(-1) }
+    func next() { shiftDay(1) }
+    func reset() { showing = .day(Date()) }
     func togglePin() { pinned.toggle() }
 
-    // MARK: - Derived display text (weekday, blessing, copy)
-    var weekdayEn: String { Self.weekdayString(Date(), "en_US") }
-    var weekdayZh: String { Self.weekdayString(Date(), "zh_TW") }
-    private static func weekdayString(_ d: Date, _ loc: String) -> String {
-        let f = DateFormatter(); f.locale = Locale(identifier: loc); f.dateFormat = "EEEE"
-        return f.string(from: d)
-    }
-
-    var headerTitle: String {
-        guard let v = current else { return weekdayEn }
-        return lang == .zh ? "\(weekdayZh) — 第\(v.index)章" : "\(weekdayEn) — Chapter \(v.index)"
-    }
-
-    var blessing: String { blessing(for: current) }
-
-    private func blessing(for v: Verse?) -> String {
-        let isZh = lang == .zh
-        let day = isZh ? weekdayZh : weekdayEn
-        if let v {
-            let raw = isZh ? v.blessingZh : v.blessing
-            if !raw.isEmpty { return raw.replacingOccurrences(of: "{weekday}", with: day) }
-        }
-        return isZh ? "願你\(day)輕安。🙏" : "May your \(day) be light. 🙏"
-    }
+    // MARK: - Derived display text
+    var text: VerseText { VerseText(zh: lang == .zh) }
+    var headerTitle: String { text.title(current, on: displayedDate) }
+    var blessing: String { text.blessing(current, on: displayedDate) }
 
     func copyFormatted() {
         guard let v = current else { return }
-        copy(v)
+        copy(v, on: displayedDate)
     }
 
     // Always copies today's actual pick, independent of prev/next browsing —
     // used by the "Copy Today's Verse" menu item so its label stays true even
     // if the panel is currently showing a browsed-to verse.
     func copyTodayVerse() {
-        guard !verses.isEmpty else { return }
-        copy(verses[todayIndex])
+        guard let v = todayVerse else { return }
+        copy(v, on: Date())
     }
 
-    private func copy(_ v: Verse) {
-        let isZh = lang == .zh
-        let verse = isZh ? v.verseZh : "\u{201C}\(v.verseEn)\u{201D}"
-        let expl = isZh ? v.explZh : v.explEn
-        let meaning = isZh ? v.meaningZh : v.meaning
-        let title = isZh ? "\(weekdayZh) — 第\(v.index)章" : "\(weekdayEn) — Chapter \(v.index)"
-        let body = isZh
-            ? "解釋：\(expl)\(meaning.isEmpty ? "" : " \(meaning)")"
-            : "Explanation: \(expl)\(meaning.isEmpty ? "" : " \(meaning)")"
-        let s = "\(title)\n\n\(verse)\n\n\(body)\n\n\(blessing(for: v))"
+    private func copy(_ v: Verse, on date: Date) {
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(s, forType: .string)
+        NSPasteboard.general.setString(text.clipboard(v, on: date), forType: .string)
     }
 }
 
@@ -375,19 +362,14 @@ struct SutraView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
                         if let v = viewModel.current {
-                            let isZh = viewModel.lang == .zh
                             let s = viewModel.fontScale
-                            let verse = isZh ? v.verseZh : "\u{201C}\(v.verseEn)\u{201D}"
-                            let expl = isZh ? v.explZh : v.explEn
-                            let meaning = isZh ? v.meaningZh : v.meaning
-                            Text(verse)
+                            let explanation = viewModel.text.explanation(v)
+                            Text(viewModel.text.quote(v))
                                 .font(.system(size: 19 * s, weight: .medium, design: .serif))
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
-                            if !expl.isEmpty || !meaning.isEmpty {
-                                Text(isZh
-                                     ? "解釋：\(expl)\(meaning.isEmpty ? "" : " \(meaning)")"
-                                     : "Explanation: \(expl)\(meaning.isEmpty ? "" : " \(meaning)")")
+                            if !explanation.isEmpty {
+                                Text(explanation)
                                     .font(.system(size: 13.5 * s))
                                     .foregroundStyle(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -480,16 +462,11 @@ struct SutraView: View {
 
     private var historyView: some View {
         VStack(alignment: .leading, spacing: 10) {
-            DatePicker("", selection: Binding(
-                get: { historyDate },
-                set: { historyDate = $0 }
-            ), in: ...Date(), displayedComponents: .date)
+            DatePicker("", selection: $historyDate, in: ...Date(), displayedComponents: .date)
                 .datePickerStyle(.graphical)
                 .labelsHidden()
             if let v = viewModel.verse(on: historyDate) {
-                let isZh = viewModel.lang == .zh
-                let firstLine = (isZh ? v.verseZh : v.verseEn).components(separatedBy: "\n").first ?? ""
-                Text(firstLine)
+                Text(viewModel.text.firstLine(v))
                     .font(.system(size: 12, design: .serif))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
@@ -509,13 +486,11 @@ struct SutraView: View {
                         .padding(.vertical, 20)
                 } else {
                     ForEach(viewModel.favoriteVerses) { v in
-                        let firstLine = (viewModel.lang == .zh ? v.verseZh : v.verseEn)
-                            .components(separatedBy: "\n").first ?? ""
                         Button {
-                            viewModel.showVerse(id: v.id)
+                            viewModel.show(v)
                         } label: {
                             HStack(alignment: .top) {
-                                Text(firstLine)
+                                Text(viewModel.text.firstLine(v))
                                     .font(.system(size: 13, design: .serif))
                                     .lineLimit(1)
                                     .truncationMode(.tail)

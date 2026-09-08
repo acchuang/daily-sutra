@@ -32,7 +32,8 @@ Built with SwiftUI + AppKit. No Xcode project — Swift Package Manager only.
 - Keyboard shortcuts while the panel is open: ←/→ prev/next, `T` today,
   `Esc` close, `⌘C` copy.
 - Right-click the menubar icon for a menu: Show Verse / Copy Today's Verse / Quit.
-- Prev / Next / Today navigation, copy-to-clipboard, Quit.
+- Prev / Next / Today navigation moves by calendar day — ← shows yesterday's
+  verse with yesterday's weekday. Copy-to-clipboard, Quit.
 - **Favorites** — heart a verse to save it; open the list from the footer (persisted).
 - **Browse by date** — calendar icon in the footer opens a date picker; pick any
   past date to preview and jump to that day's verse.
@@ -72,7 +73,7 @@ The same unsigned-app Gatekeeper step applies if you move it to `/Applications`.
 
 ```
 swift build              # debug
-swift test               # DailyPick deterministic-pick self-check
+swift test               # daily-pick + verse-text rendering self-checks
 ./build.sh               # release + assemble .app bundle
 open build/DailySutra.app
 ```
