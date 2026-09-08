@@ -59,8 +59,64 @@ public enum VerseStore {
     }
 }
 
-/// Deterministic per-date pseudo-random verse pick — shared by the app and the
-/// widget so both show the SAME verse on the same day (xorshift64 over YYYYMMDD).
+/// Display text for a verse in one language. The panel, the favorites list and
+/// the clipboard all render through this, so a wording change lands in one place.
+public struct VerseText {
+    public let zh: Bool
+
+    public init(zh: Bool) { self.zh = zh }
+
+    /// The pull-quote: the classical line in 中, the modern verse (curly-quoted) in EN.
+    public func quote(_ v: Verse) -> String {
+        zh ? v.verseZh : "\u{201C}\(v.verseEn)\u{201D}"
+    }
+
+    /// Single-line form for list rows.
+    public func firstLine(_ v: Verse) -> String {
+        (zh ? v.verseZh : v.verseEn).components(separatedBy: "\n").first ?? ""
+    }
+
+    /// Explanation merged with the reflection; empty when the verse has neither.
+    public func explanation(_ v: Verse) -> String {
+        let expl = zh ? v.explZh : v.explEn
+        let meaning = zh ? v.meaningZh : v.meaning
+        let body = expl + (meaning.isEmpty ? "" : (expl.isEmpty ? "" : " ") + meaning)
+        if body.isEmpty { return "" }
+        return zh ? "解釋：\(body)" : "Explanation: \(body)"
+    }
+
+    public func weekday(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: zh ? "zh_TW" : "en_US")
+        f.dateFormat = "EEEE"
+        return f.string(from: date)
+    }
+
+    public func title(_ v: Verse?, on date: Date) -> String {
+        let day = weekday(date)
+        guard let v else { return day }
+        return zh ? "\(day) — 第\(v.index)章" : "\(day) — Chapter \(v.index)"
+    }
+
+    public func blessing(_ v: Verse?, on date: Date) -> String {
+        let day = weekday(date)
+        if let v {
+            let raw = zh ? v.blessingZh : v.blessing
+            if !raw.isEmpty { return raw.replacingOccurrences(of: "{weekday}", with: day) }
+        }
+        return zh ? "願你\(day)輕安。🙏" : "May your \(day) be light. 🙏"
+    }
+
+    public func clipboard(_ v: Verse, on date: Date) -> String {
+        let expl = explanation(v)
+        return [title(v, on: date), quote(v), expl, blessing(v, on: date)]
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n\n")
+    }
+}
+
+/// Deterministic per-date pseudo-random verse pick — a pure function of the
+/// local calendar date, so any date's verse can be recomputed without history.
 public enum DailyPick {
     public static func index(count: Int, for date: Date = Date()) -> Int {
         guard count > 0 else { return 0 }

@@ -78,3 +78,52 @@ final class DailyPickTests: XCTestCase {
         }
     }
 }
+/// VerseText is the single source of truth for rendered verse text — the panel,
+/// the favorites list and the clipboard all go through it.
+final class VerseTextTests: XCTestCase {
+    private let v = Verse(
+        index: 3, sutra: "diamond", titleZh: "大乘正宗分", titleEn: "Great Vehicle",
+        zh: "所有一切眾生之類", en: "All living beings",
+        verseEn: "Lead every being to peace, then know\nno being was led.",
+        verseZh: "應如是降伏其心",
+        explEn: "Help without keeping score.", explZh: "幫忙不記帳。",
+        meaning: "The helper dissolves.", meaningZh: "助人者亦空。",
+        blessing: "May your {weekday} be spacious. 🌿", blessingZh: "願你{weekday}寬廣。🌿")
+
+    private let monday = Calendar(identifier: .gregorian)
+        .date(from: DateComponents(year: 2024, month: 1, day: 1))!
+
+    func testQuoteAndFirstLine() {
+        XCTAssertEqual(VerseText(zh: true).quote(v), "應如是降伏其心", "中 quotes the classical line bare")
+        XCTAssertTrue(VerseText(zh: false).quote(v).hasPrefix("\u{201C}"), "EN verse is curly-quoted")
+        XCTAssertEqual(VerseText(zh: false).firstLine(v), "Lead every being to peace, then know",
+                       "list rows take only the first line")
+    }
+
+    func testExplanationMergesMeaning() {
+        XCTAssertEqual(VerseText(zh: false).explanation(v),
+                       "Explanation: Help without keeping score. The helper dissolves.")
+        XCTAssertEqual(VerseText(zh: true).explanation(v), "解釋：幫忙不記帳。 助人者亦空。")
+    }
+
+    func testEmptyExplanationYieldsNoLabel() {
+        let bare = Verse(index: 1, sutra: "heart", titleZh: "", titleEn: "", zh: "", en: "",
+                         verseEn: "x", verseZh: "x", explEn: "", explZh: "", meaning: "", meaningZh: "")
+        XCTAssertEqual(VerseText(zh: false).explanation(bare), "",
+                       "no explanation must not render a dangling 'Explanation:' label")
+    }
+
+    func testWeekdayFollowsTheGivenDate() {
+        XCTAssertEqual(VerseText(zh: false).title(v, on: monday), "Monday — Chapter 3")
+        XCTAssertEqual(VerseText(zh: false).blessing(v, on: monday), "May your Monday be spacious. 🌿")
+        XCTAssertEqual(VerseText(zh: true).title(v, on: monday), "星期一 — 第3章")
+    }
+
+    func testClipboardSkipsEmptySections() {
+        let bare = Verse(index: 1, sutra: "heart", titleZh: "", titleEn: "", zh: "", en: "",
+                         verseEn: "x", verseZh: "x", explEn: "", explZh: "", meaning: "", meaningZh: "")
+        let out = VerseText(zh: false).clipboard(bare, on: monday)
+        XCTAssertFalse(out.contains("\n\n\n"), "an empty section must not leave a blank gap")
+        XCTAssertTrue(out.contains("May your Monday be light."), "falls back to the default blessing")
+    }
+}
