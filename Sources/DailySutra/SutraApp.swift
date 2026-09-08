@@ -2,6 +2,7 @@ import SwiftUI
 import AppKit
 import Combine
 import ServiceManagement
+import UserNotifications
 import SutraKit
 
 @main
@@ -28,7 +29,7 @@ final class CardPanel: NSPanel {
     override var canBecomeMain: Bool { false }
 }
 
-final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUserNotificationCenterDelegate {
     private var panel: NSPanel?
     private var statusItem: NSStatusItem?
     private var viewModel: VerseViewModel?
@@ -87,6 +88,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         self.statusItem = item
 
         NSApp.setActivationPolicy(.accessory)
+
+        if Bundle.main.bundleIdentifier != nil {
+            UNUserNotificationCenter.current().delegate = self
+        }
 
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] ev in
             let code = ev.keyCode
@@ -164,6 +169,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
+    // Tapping the daily reminder opens the panel on today's verse.
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse) async {
+        await MainActor.run {
+            viewModel?.reset()
+            openPanel()
+        }
+    }
+
+    // The app is an accessory, but show the banner anyway if macOS considers it frontmost.
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification) async
+        -> UNNotificationPresentationOptions { [.banner, .sound] }
+
     @MainActor @objc func menuShowVerse(_ s: Any?) { openPanel() }
     @MainActor @objc func menuCopyVerse(_ s: Any?) { viewModel?.copyTodayVerse() }
     @objc func menuQuit(_ s: Any?) { NSApp.terminate(nil) }
@@ -176,12 +195,16 @@ final class VerseViewModel: ObservableObject {
     @Published var lang: AppLang
     @Published var fontScale: Double
     @Published var launchAtLogin: Bool
+    @Published var notifyEnabled: Bool
+    @Published var notifyMinutes: Int       // minutes since local midnight
     @Published var favorites: Set<String>      // verse.id strings e.g. "diamond_1"
     @Published var showFavorites = false
     @Published var showHistory = false
     @Published var pinned = false      // keep panel open across focus loss
 
     private static let kLang = "AppLang", kScale = "FontScale", kFavs = "Favorites"
+    private static let kNotify = "NotifyEnabled", kNotifyAt = "NotifyMinutes"
+    private static let defaultNotifyMinutes = 8 * 60
     private var rolloverTimer: Timer?
     private var currentDay: Int = 0
 
@@ -192,6 +215,9 @@ final class VerseViewModel: ObservableObject {
         let raw = UserDefaults.standard.double(forKey: Self.kScale)
         self.fontScale = raw == 0 ? 1.0 : min(max(raw, 0.85), 1.8)
         self.launchAtLogin = SMAppService.mainApp.status == .enabled
+        self.notifyEnabled = UserDefaults.standard.bool(forKey: Self.kNotify)
+        let savedMinutes = UserDefaults.standard.object(forKey: Self.kNotifyAt) as? Int
+        self.notifyMinutes = savedMinutes ?? Self.defaultNotifyMinutes
         if let data = UserDefaults.standard.data(forKey: Self.kFavs) {
             if let ids = try? JSONDecoder().decode([String].self, from: data) {
                 self.favorites = Set(ids)
@@ -210,6 +236,37 @@ final class VerseViewModel: ObservableObject {
         }
         self.currentDay = Self.dayKey(Date())
         startRollover()
+        if notifyEnabled { refreshNotifications() }
+    }
+
+    // MARK: - Daily reminder
+
+    func toggleNotify() {
+        if notifyEnabled {
+            notifyEnabled = false
+            UserDefaults.standard.set(false, forKey: Self.kNotify)
+            DailyNotifier.cancelAll()
+            return
+        }
+        Task {
+            let granted = await DailyNotifier.requestAuthorization()
+            notifyEnabled = granted
+            UserDefaults.standard.set(granted, forKey: Self.kNotify)
+            if granted { refreshNotifications() }
+        }
+    }
+
+    func setNotifyMinutes(_ m: Int) {
+        notifyMinutes = min(max(m, 0), 24 * 60 - 1)
+        UserDefaults.standard.set(notifyMinutes, forKey: Self.kNotifyAt)
+        if notifyEnabled { refreshNotifications() }
+    }
+
+    /// Re-queues the reminder horizon. Called whenever anything the queued
+    /// content depends on changes — language, time, the calendar day.
+    private func refreshNotifications() {
+        DailyNotifier.reschedule(verses: verses, text: text,
+                                 hour: notifyMinutes / 60, minute: notifyMinutes % 60)
     }
 
     // MARK: - Day rollover
@@ -229,11 +286,13 @@ final class VerseViewModel: ObservableObject {
         currentDay = k
         // Re-point a date view at the new today. A favorite being read stays put.
         if case .day = showing { showing = .day(Date()) }
+        if notifyEnabled { refreshNotifications() }   // top the horizon back up
     }
 
     func setLang(_ l: AppLang) {
         lang = l
         UserDefaults.standard.set(l.rawValue, forKey: Self.kLang)
+        if notifyEnabled { refreshNotifications() }   // queued bodies are language-specific
     }
 
     var isCurrentFavorite: Bool {
@@ -436,6 +495,22 @@ struct SutraView: View {
                 Spacer()
             }
             HStack(spacing: 8) {
+                Toggle("Daily reminder", isOn: Binding(
+                    get: { viewModel.notifyEnabled },
+                    set: { _ in viewModel.toggleNotify() }
+                ))
+                .toggleStyle(.checkbox)
+                .font(.caption)
+                if viewModel.notifyEnabled {
+                    DatePicker("", selection: notifyTime, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                        .datePickerStyle(.field)
+                        .font(.caption)
+                        .fixedSize()
+                }
+                Spacer()
+            }
+            HStack(spacing: 8) {
                 iconButton("chevron.left", help: "Previous verse") { viewModel.prev() }
                 iconButton("arrow.counterclockwise", help: "Today's verse") { viewModel.reset() }
                 iconButton("chevron.right", help: "Next verse") { viewModel.next() }
@@ -458,6 +533,21 @@ struct SutraView: View {
                 iconButton("power", help: "Quit Daily Sutra") { NSApp.terminate(nil) }
             }
         }
+    }
+
+    // The reminder time is stored as minutes since midnight; DatePicker wants a
+    // Date, so map through today's date and keep only hour/minute.
+    private var notifyTime: Binding<Date> {
+        Binding(
+            get: {
+                Calendar.current.date(bySettingHour: viewModel.notifyMinutes / 60,
+                                      minute: viewModel.notifyMinutes % 60,
+                                      second: 0, of: Date()) ?? Date()
+            },
+            set: { d in
+                let c = Calendar.current.dateComponents([.hour, .minute], from: d)
+                viewModel.setNotifyMinutes((c.hour ?? 0) * 60 + (c.minute ?? 0))
+            })
     }
 
     private var historyView: some View {

@@ -34,6 +34,8 @@ Built with SwiftUI + AppKit. No Xcode project — Swift Package Manager only.
 - Right-click the menubar icon for a menu: Show Verse / Copy Today's Verse / Quit.
 - Prev / Next / Today navigation moves by calendar day — ← shows yesterday's
   verse with yesterday's weekday. Copy-to-clipboard, Quit.
+- **Daily reminder** — optional notification at a time you pick, carrying that
+  day's verse; clicking it opens the panel on today. Off by default.
 - **Favorites** — heart a verse to save it; open the list from the footer (persisted).
 - **Browse by date** — calendar icon in the footer opens a date picker; pick any
   past date to preview and jump to that day's verse.
