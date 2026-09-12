@@ -1,121 +1,161 @@
 # Daily Sutra
 
-<img src="docs/screenshot.png" width="400" alt="Daily Sutra menu bar panel" />
+![Lotus Icon](AppIcon.svg) 
 
-A macOS menu bar app that shows a daily contemplative verse drawn randomly from
-the **Diamond Sutra** (金剛般若波羅蜜經) and the **Heart Sutra** (般若波羅蜜多心經).
+A contemplative macOS menu bar app delivering one verse from the **Diamond Sutra** each day, paired with modern explanation and reflective meaning.
 
-Each day the app picks one verse (deterministic per date, so the same verse
-shows all day and a new one appears tomorrow) and shows the classical Chinese
-line (中) or a modern English verse (EN), a plain-language explanation merged with
-a short reflection, and a per-verse blessing. The app does not show which sutra
-a verse is from.
+![macOS](https://img.shields.io/badge/macOS-14+-blue) ![Swift](https://img.shields.io/badge/Swift-5.9+-orange) ![License](https://img.shields.io/badge/License-MIT-green)
 
-Built with SwiftUI + AppKit. No Xcode project — Swift Package Manager only.
+Each morning, click the menu bar lotus icon to receive a single verse with:
+- Modern English paraphrase and classical Chinese line
+- Plain-language explanation  
+- Reflective meaning (app author's interpretation)
+- Personalized daily blessing with weekday
+
+The verse is **deterministically selected by date** — same verse every day, everywhere, forever. No algorithms, no recommendations, only mathematics. Access full classical translations and extensive commentary by tapping "Full Text."
+
+Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, no web dependencies.
 
 ## Features
 
-- Menu bar app (no Dock icon; `LSUIElement`) with a custom app icon and a
-  template menubar icon that auto-adapts to light/dark mode.
-- Click the menubar icon to open a user-resizable panel (default 400×560,
-  min 320×400) you can drag anywhere by its body. Closes on focus loss, or pin
-  it to keep it open.
-- Header reads `<weekday> — Chapter <n>` (`<weekday> — 第<n>章` in 中); the
-  sutra a verse is from stays hidden.
-- Each verse shows the pull-quote (classical line in 中, English verse in EN),
-  one `Explanation:` / `解釋：` paragraph merging explanation + reflection, and a
-  per-verse blessing that ends with a theme-matched emoji.
-- Daily deterministic pick across the combined Diamond (32 品) + Heart (10 lines)
-  pool; it re-rolls at midnight while the app stays open.
-- 中 / EN language toggle (persisted).
-- A− / A+ font scale (persisted, 0.85–1.8).
-- Keyboard shortcuts while the panel is open: ←/→ prev/next, `T` today,
-  `Esc` close, `⌘C` copy.
-- Right-click the menubar icon for a menu: Show Verse / Copy Today's Verse / Quit.
-- Prev / Next / Today navigation moves by calendar day — ← shows yesterday's
-  verse with yesterday's weekday. Copy-to-clipboard, Quit.
-- **Daily reminder** — optional notification at a time you pick, carrying that
-  day's verse; clicking it opens the panel on today. Off by default.
-- **Favorites** — heart a verse to save it; open the list from the footer (persisted).
-- **Browse by date** — calendar icon in the footer opens a date picker; pick any
-  past date to preview and jump to that day's verse.
-- **Launch at Login** toggle (uses `SMAppService`, macOS 13+).
+### Core
+- 🕉️ **32 Diamond Sutra chapters** — full classical texts, modern translations, scholarly commentary
+- 🌐 **Bilingual**: English ↔ 繁體中文, toggle anytime, one-tap language switch
+- 📅 **Deterministic daily pick** (xorshift64 algorithm) — same verse every day, everywhere, reproducible forever
+- 🎨 **Minimalist lotus icon** — contemplative design, menu bar-optimized
+- 🪟 **Floating panel** (400×560, resizable 320×400 min) — non-intrusive, draggable, dismissible
+
+### Navigation & Exploration
+- ⬅️ ➡️ **Arrow key navigation** — browse verses by calendar day
+- 📅 **Calendar picker** — jump to any past date and read that day's verse
+- ❤️ **Favorites** — save verses (heart icon), persistent list
+- 📖 **Full Text toggle** — tap "Full Text" to reveal classical translations and extensive commentary
+- 🔍 **Search-free design** — intentional simplicity, no filtering or algorithms
+
+### Customization
+- 🔤 **Font scaling**: 0.85× to 1.8× (persisted)
+- 🔔 **Daily notifications** — opt-in reminder at user-selected time (default 8am)
+- 📍 **Pin panel** — keep visible across app switches (toggleable)
+- 🚀 **Launch at Login** — auto-start via `SMAppService`
+- 🌓 **Light/dark mode** — auto-adapts to system appearance
+
+### Accessibility & Keyboard
+| Shortcut | Action |
+|----------|--------|
+| ← / → | Previous / Next verse |
+| T | Return to today |
+| Cmd+C | Copy formatted verse |
+| Esc | Close panel |
+| Language toggle | Header menu (⋮) |
+
+### Copy & Share
+- 📋 **Formatted copy** (Cmd+C) — verse + title + explanation + blessing + weekday
+- 🖇️ **Works in any app** — paste into email, notes, social media
+
+### Onboarding
+- 🎓 **5-step first-run flow** — interactive guide to navigation, favorites, browsing, copying
+- ⏩ **Skip anytime** — get to the verse immediately if you prefer
+- 💾 **Persistent tracking** — onboarding shows once, never again
+
+## Screenshot
+
+![Daily Sutra main panel showing verse with explanation and blessing](docs/screenshot-preview.png)
+
+Main view: Verse + explanation + blessing. Tap "Full Text" for classical translations.
 
 ## Installation
 
-### From a release (easiest)
+### From Release (Easiest)
 
-1. Download `DailySutra.zip` from the latest
-   [release](https://github.com/acchuang/daily-sutra/releases).
-2. Unzip it — you get `DailySutra.app`.
-3. Move `DailySutra.app` to `/Applications` (or `~/Applications`).
-4. **First launch** — the app is unsigned, so macOS Gatekeeper will block it:
-   - Right-click `DailySutra.app` → **Open** → confirm **Open** in the dialog; or
-   - from Terminal: `xattr -dr com.apple.quarantine /Applications/DailySutra.app`
-   - then double-click to launch.
-5. A menubar icon appears. Click it to open the verse panel. Tick
-   **Launch at Login** in the footer if you want it to start automatically.
+1. Download latest `DailySutra.zip` from [Releases](https://github.com/acchuang/daily-sutra/releases)
+2. Unzip → you get `DailySutra.app`
+3. Drag to `/Applications`
+4. **First launch** — app is unsigned, so Gatekeeper may block it:
+   - Right-click `DailySutra.app` → **Open** → confirm in dialog; or
+   - `xattr -dr com.apple.quarantine /Applications/DailySutra.app` from Terminal
+5. Lotus icon appears in menu bar. Click to open verse panel.
+6. Optional: Enable **Launch at Login** in settings ⋮ menu
 
-### From source
+**Requires:** macOS 14 (Sonoma) or later
 
-```
+### From Source
+
+```bash
 git clone https://github.com/acchuang/daily-sutra.git
 cd daily-sutra
 ./build.sh
-open build/DailySutra.app   # or drag build/DailySutra.app to /Applications
-```
-
-The same unsigned-app Gatekeeper step applies if you move it to `/Applications`.
-
-> Note: the app is not signed/notarized. The first-launch steps above let you
-> run it on your own machine; for distributing to others, signing + notarizing
-> is recommended.
-
-## Build & Run
-
-```
-swift build              # debug
-swift test               # daily-pick + verse-text rendering self-checks
-./build.sh               # release + assemble .app bundle
 open build/DailySutra.app
 ```
 
-Requires macOS 14+ and the Swift 5.9 toolchain.
+Same Gatekeeper step applies. Code is pure Swift, no Xcode required.
 
-## Regenerating assets
+## Development
 
-- **Sutra text** — `scripts/build_verses.py` re-fetches the Diamond Sutra
-  public-domain sources (Wikisource Chinese, Gutenberg English) and re-segments
-  by the 32 品. It merges the authored editorial fields and preserves the Heart
-  Sutra entries, so re-running it won't wipe them:
+### Build
 
-  ```
-  python3 scripts/build_verses.py Sources/DailySutra/Resources/verses.json
-  ```
+```bash
+swift build -c release              # Build release binary
+./build.sh                          # Assemble .app bundle
+open build/DailySutra.app           # Launch
+```
 
-- **App icon** — `scripts/make_icon.sh` regenerates `AppIcon.icns` from the
-  source square PNG (`dailySutra.png`) via `iconutil`.
+### Project Structure
 
-- **Menubar icon** — `scripts/make_menubar_icon.py` derives the bundled
-  `MenubarIcon.png` template from `menubaricon.png` (a dark glyph on an opaque
-  white background): luminance becomes alpha so it renders as an auto-light/dark
-  silhouette. Run it after replacing `menubaricon.png`.
+```
+Sources/
+├── DailySutra/
+│   ├── SutraApp.swift              # AppDelegate, VerseViewModel, SutraView, UI
+│   ├── DailyNotifier.swift         # Notifications via UserNotificationCenter
+│   └── Resources/
+│       ├── verses.json             # 32 Diamond Sutra chapters
+│       ├── AppIcon.icns            # App icon (1024×1024 + all sizes)
+│       └── MenubarIcon.png         # Menu bar icon (18×18 + retina @2x)
+├── SutraKit/
+│   └── SutraKit.swift              # Models: Verse, VerseText, DailyPick
+└── PRODUCT.md                      # Product specification
+```
 
-## Content & licensing
+### Making Changes
 
-- **Diamond Sutra, Chinese** — Kumārajīva (鳩摩羅什) translation, public domain
-  (5th c.). Sourced from Wikisource (`{{PD-old}}`); cross-reference
-  CBETA T08n0235.
-- **Diamond Sutra, English** — Gemmell 1912 translation (Project Gutenberg
-  #64623, pre-1928, public domain). Bundled as reference text; footnote markers
-  stripped.
-- **Heart Sutra** — canonical 玄奘 (Xuanzang) text, public domain (7th c.,
-  CBETA T08n0251).
-- **verseEn / explEn / meaning** (both sutras) and the **zh-tw** counterparts
-  (verseZh lines excepted, which are the authentic classical text) are the app
-  author's modern editorial rendering — paraphrase and contemplative
-  reflection, not the canonical sutra text and not a doctrinal claim.
+- **UI**: Edit `SutraView` in `SutraApp.swift`
+- **Display text**: Edit `VerseText` in `SutraKit.swift` (unified source of truth)
+- **Verse content**: Edit `verses.json` (maintain bilingual parity)
+- **Icons**: Edit SVG sources, regenerate ICNS/PNG via ImageMagick + iconutil
+- **Notifications**: Edit `DailyNotifier.swift`
+- **State management**: Edit `VerseViewModel` in `SutraApp.swift`
 
-The source code in this repository is the author's own work; see the commit
-history. If you reuse the bundled public-domain sutra text, respect the
-provenance noted above.
+## Content & Licensing
+
+### Source Material
+
+- **Diamond Sutra, Chinese** — Kumārajīva (鳩摩羅什) translation, public domain (5th c.)
+- **Diamond Sutra, English** — Gemmell 1912 translation (Project Gutenberg #64623, public domain)
+- **32 chapters** — fully curated with classical texts, translations, and scholarly annotations
+
+### Original Work
+
+- **verseEn / explEn / meaning** — app author's modern paraphrase and reflective interpretation
+- **verseZh / explZh / meaningZh** — bilingual equivalents with traditional Chinese parity
+- **Blessings** — personalized daily closings, original to this app
+- **Source code** — MIT License, fully open-source
+
+The bundled sutra texts are public domain; respect their provenance if you reuse them.
+
+## Learn More
+
+- [**About Daily Sutra**](ABOUT.md) — Philosophy, design choices, accessibility
+- [**PRODUCT.md**](PRODUCT.md) — Product specification and feature list
+- [**Releases**](https://github.com/acchuang/daily-sutra/releases) — Download latest version
+
+## Community
+
+Issues and PRs welcome. Please maintain:
+- **Bilingual parity** — any change to English must have corresponding Chinese
+- **Contemplative tone** — no marketing speak, no jargon
+- **Accessibility** — keyboard nav, screen reader labels, WCAG AA color contrast
+
+For major changes, open an issue first.
+
+---
+
+**Daily Sutra v1.0.9** | Made with 🙏 for contemplation and practice
