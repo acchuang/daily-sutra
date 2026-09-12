@@ -1,7 +1,5 @@
 # Daily Sutra
 
-![Lotus Icon](AppIcon.svg) 
-
 A contemplative macOS menu bar app delivering one verse from the **Diamond Sutra** each day, paired with modern explanation and reflective meaning.
 
 ![macOS](https://img.shields.io/badge/macOS-14+-blue) ![Swift](https://img.shields.io/badge/Swift-5.9+-orange) ![License](https://img.shields.io/badge/License-MIT-green)
