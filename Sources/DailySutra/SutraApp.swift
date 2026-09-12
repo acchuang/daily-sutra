@@ -36,6 +36,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
     private var keyMonitor: Any?
     private var cancellables = Set<AnyCancellable>()
 
+    deinit {
+        if let monitor = keyMonitor {
+            NSEvent.removeMonitor(monitor)
+        }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         let vm = VerseViewModel(verses: VerseStore.load())
         viewModel = vm
@@ -75,7 +81,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
                 img.isTemplate = true          // transparent silhouette → auto light/dark
                 // fit within the menu bar, preserving aspect (icon is not square)
                 let maxDim: CGFloat = 22
-                let s = maxDim / max(img.size.width, img.size.height)
+                let maxSize = max(img.size.width, img.size.height)
+                guard maxSize > 0 else {
+                    button.image = NSImage(systemSymbolName: "circle.dashed", accessibilityDescription: "Daily Sutra")
+                    self.statusItem = item
+                    return
+                }
+                let s = maxDim / maxSize
                 img.size = NSSize(width: img.size.width * s, height: img.size.height * s)
                 button.image = img
             } else {
@@ -150,6 +162,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
             let screen = button.window?.screen ?? NSScreen.main
             let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1920, height: 1080)
             origin.x = min(max(origin.x, visible.minX), visible.maxX - panel.frame.width)
+            origin.y = min(origin.y, visible.maxY - panel.frame.height)
             panel.setFrameTopLeftPoint(origin)
         }
         panel.makeKeyAndOrderFront(nil)
@@ -651,9 +664,13 @@ struct SutraView: View {
     private var notifyTime: Binding<Date> {
         Binding(
             get: {
-                Calendar.current.date(bySettingHour: viewModel.notifyMinutes / 60,
-                                      minute: viewModel.notifyMinutes % 60,
-                                      second: 0, of: Date()) ?? Date()
+                guard let date = Calendar.current.date(bySettingHour: viewModel.notifyMinutes / 60,
+                                                        minute: viewModel.notifyMinutes % 60,
+                                                        second: 0, of: Date()) else {
+                    assertionFailure("Failed to construct notification time from \(viewModel.notifyMinutes) minutes")
+                    return Date()
+                }
+                return date
             },
             set: { d in
                 let c = Calendar.current.dateComponents([.hour, .minute], from: d)
