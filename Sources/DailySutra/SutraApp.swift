@@ -201,9 +201,12 @@ final class VerseViewModel: ObservableObject {
     @Published var showFavorites = false
     @Published var showHistory = false
     @Published var pinned = false      // keep panel open across focus loss
+    @Published var showOnboarding = false
+    @Published var notifyDeniedAlert = false
 
     private static let kLang = "AppLang", kScale = "FontScale", kFavs = "Favorites"
     private static let kNotify = "NotifyEnabled", kNotifyAt = "NotifyMinutes"
+    private static let kOnboarded = "OnboardingCompleted"
     private static let defaultNotifyMinutes = 8 * 60
     private var rolloverTimer: Timer?
     private var currentDay: Int = 0
@@ -235,8 +238,14 @@ final class VerseViewModel: ObservableObject {
             self.favorites = []
         }
         self.currentDay = Self.dayKey(Date())
+        self.showOnboarding = !UserDefaults.standard.bool(forKey: Self.kOnboarded)
         startRollover()
         if notifyEnabled { refreshNotifications() }
+    }
+
+    func completeOnboarding() {
+        showOnboarding = false
+        UserDefaults.standard.set(true, forKey: Self.kOnboarded)
     }
 
     // MARK: - Daily reminder
@@ -252,7 +261,11 @@ final class VerseViewModel: ObservableObject {
             let granted = await DailyNotifier.requestAuthorization()
             notifyEnabled = granted
             UserDefaults.standard.set(granted, forKey: Self.kNotify)
-            if granted { refreshNotifications() }
+            if granted {
+                refreshNotifications()
+            } else {
+                notifyDeniedAlert = true
+            }
         }
     }
 
@@ -408,52 +421,109 @@ final class VerseViewModel: ObservableObject {
 struct SutraView: View {
     @ObservedObject var viewModel: VerseViewModel
     @State private var historyDate = Date()
+    @State private var showExpanded = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            header
-            Divider()
-            if viewModel.showHistory {
-                historyView
-            } else if viewModel.showFavorites {
-                favoritesList
-            } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
-                        if let v = viewModel.current {
-                            let s = viewModel.fontScale
-                            let explanation = viewModel.text.explanation(v)
-                            Text(viewModel.text.quote(v))
-                                .font(.system(size: 19 * s, weight: .medium, design: .serif))
+        ZStack {
+            VStack(alignment: .leading, spacing: 14) {
+                header
+                Divider()
+                if viewModel.showHistory {
+                    historyView
+                } else if viewModel.showFavorites {
+                    favoritesList
+                } else if showExpanded, let v = viewModel.current {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 14) {
+                            Text(viewModel.lang == .en ? "Classical Translation" : "文言文譯文")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                            Text(viewModel.lang == .en ? v.en : v.zh)
+                                .font(.system(size: 12, design: .serif))
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
-                            if !explanation.isEmpty {
-                                Text(explanation)
-                                    .font(.system(size: 13.5 * s))
-                                    .foregroundStyle(.secondary)
+                                .foregroundStyle(.secondary)
+                            Divider().padding(.vertical, 8)
+                            Button(action: { showExpanded = false }) {
+                                HStack {
+                                    Image(systemName: "chevron.up")
+                                    Text("Collapse")
+                                }
+                                .font(.caption)
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                        .padding(.horizontal, 2)
+                    }
+                } else {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 12) {
+                            if let v = viewModel.current {
+                                let s = viewModel.fontScale
+                                let explanation = viewModel.text.explanation(v)
+                                Text(viewModel.text.quote(v))
+                                    .font(.system(size: 20 * s, weight: .semibold, design: .serif))
                                     .fixedSize(horizontal: false, vertical: true)
                                     .textSelection(.enabled)
+                                    .accessibilityElement(children: .ignore)
+                                    .accessibilityLabel("Verse: \(viewModel.text.quote(v))")
+                                if !explanation.isEmpty {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text(viewModel.lang == .en ? "Meaning:" : "意解：")
+                                            .font(.system(size: 11 * s, weight: .semibold))
+                                            .foregroundStyle(.secondary)
+                                        Text(explanation)
+                                            .font(.system(size: 13 * s, weight: .regular))
+                                            .foregroundStyle(.secondary)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                            .textSelection(.enabled)
+                                            .accessibilityElement(children: .ignore)
+                                            .accessibilityLabel("Explanation: \(explanation)")
+                                    }
+                                }
+                                Divider()
+                                Text(viewModel.blessing)
+                                    .font(.system(size: 13 * s, weight: .light, design: .serif))
+                                    .italic()
+                                    .foregroundStyle(.tertiary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .textSelection(.enabled)
+                                    .accessibilityElement(children: .ignore)
+                                    .accessibilityLabel("Blessing: \(viewModel.blessing)")
+                                Button(action: { showExpanded = true }) {
+                                    HStack {
+                                        Image(systemName: "book.circle")
+                                        Text("Full Text")
+                                    }
+                                    .font(.caption)
+                                }
+                                .buttonStyle(.bordered)
+                                Spacer(minLength: 0)
+                            } else {
+                                Text("No verses loaded.")
                             }
-                            Divider()
-                            Text(viewModel.blessing)
-                                .font(.system(size: 13 * s, weight: .regular, design: .serif))
-                                .italic()
-                                .foregroundStyle(.tertiary)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .textSelection(.enabled)
-                            Spacer(minLength: 0)
-                        } else {
-                            Text("No verses loaded.")
                         }
+                        .padding(.horizontal, 2)
                     }
-                    .padding(.horizontal, 2)
                 }
+                controls
             }
-            controls
+            .padding(20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+            if viewModel.showOnboarding {
+                OnboardingOverlay(viewModel: viewModel)
+            }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .alert("Notifications Not Enabled", isPresented: $viewModel.notifyDeniedAlert) {
+            Button("Open System Settings") {
+                NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Library/PreferencePanes/Notifications.prefPane"))
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Daily Sutra needs notification permission. Enable it in System Settings > Notifications > Daily Sutra.")
+        }
     }
 
     private static let cachedHeaderIcon: NSImage? = {
@@ -463,29 +533,43 @@ struct SutraView: View {
     }()
 
     private var header: some View {
-        HStack(spacing: 10) {
-            if let icon = Self.cachedHeaderIcon {
-                Image(nsImage: icon)
-                    .resizable()
-                    .renderingMode(.template)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                if let icon = Self.cachedHeaderIcon {
+                    Image(nsImage: icon)
+                        .resizable()
+                        .renderingMode(.template)
+                        .foregroundStyle(.tertiary)
+                        .frame(width: 16, height: 16)
+                }
+                Text(viewModel.headerTitle)
+                    .font(.system(size: 14, weight: .semibold, design: .serif))
+                    .lineLimit(1)
+                Spacer()
+                Menu {
+                    Picker("Language", selection: $viewModel.lang) {
+                        ForEach(AppLang.allCases, id: \.self) { l in Text(l.label).tag(l) }
+                    }
+                    .onChange(of: viewModel.lang) { _, new in viewModel.setLang(new) }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.borderless)
+                .help("Settings")
+            }
+            if let v = viewModel.current {
+                Text("\(viewModel.lang == .en ? "Chapter" : "第")\(v.index) · \(v.sutra.uppercased())")
+                    .font(.system(size: 11, weight: .regular, design: .default))
                     .foregroundStyle(.secondary)
-                    .frame(width: 20, height: 20)
             }
-            Text(viewModel.headerTitle)
-                .font(.system(size: 15, weight: .semibold, design: .serif))
-                .lineLimit(1)
-            Spacer()
-            Picker("", selection: $viewModel.lang) {
-                ForEach(AppLang.allCases, id: \.self) { l in Text(l.label).tag(l) }
-            }
-            .pickerStyle(.segmented).frame(width: 90)
-            .onChange(of: viewModel.lang) { _, new in viewModel.setLang(new) }
         }
     }
 
     private var controls: some View {
         VStack(spacing: 10) {
-            HStack {
+            HStack(spacing: 12) {
                 Toggle("Launch at Login", isOn: Binding(
                     get: { viewModel.launchAtLogin },
                     set: { _ in viewModel.toggleLaunchAtLogin() }
@@ -493,8 +577,6 @@ struct SutraView: View {
                 .toggleStyle(.checkbox)
                 .font(.caption)
                 Spacer()
-            }
-            HStack(spacing: 8) {
                 Toggle("Daily reminder", isOn: Binding(
                     get: { viewModel.notifyEnabled },
                     set: { _ in viewModel.toggleNotify() }
@@ -508,29 +590,58 @@ struct SutraView: View {
                         .font(.caption)
                         .fixedSize()
                 }
-                Spacer()
             }
-            HStack(spacing: 8) {
-                iconButton("chevron.left", help: "Previous verse") { viewModel.prev() }
-                iconButton("arrow.counterclockwise", help: "Today's verse") { viewModel.reset() }
-                iconButton("chevron.right", help: "Next verse") { viewModel.next() }
-                iconButton(viewModel.isCurrentFavorite ? "heart.fill" : "heart",
-                           help: viewModel.isCurrentFavorite ? "Remove from favorites" : "Save to favorites") { viewModel.toggleFavorite() }
-                iconButton("list.bullet", help: "Favorites") {
-                    viewModel.showHistory = false
-                    viewModel.showFavorites.toggle()
+            Divider()
+            HStack(spacing: 4) {
+                Group {
+                    iconButton("chevron.left", help: "Previous verse") { viewModel.prev() }
+                    iconButton("arrow.counterclockwise", help: "Today's verse") { viewModel.reset() }
+                    iconButton("chevron.right", help: "Next verse") { viewModel.next() }
                 }
-                iconButton("calendar", help: "Browse by date") {
-                    viewModel.showFavorites = false
-                    viewModel.showHistory.toggle()
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Navigation")
+                Divider().frame(height: 18)
+                Group {
+                    iconButton(viewModel.isCurrentFavorite ? "heart.fill" : "heart",
+                               help: viewModel.isCurrentFavorite ? "Remove from favorites" : "Save to favorites") { viewModel.toggleFavorite() }
+                    iconButton("list.bullet", help: "Favorites") {
+                        viewModel.showHistory = false
+                        viewModel.showFavorites.toggle()
+                    }
+                    iconButton("calendar", help: "Browse by date") {
+                        viewModel.showFavorites = false
+                        viewModel.showHistory.toggle()
+                    }
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Collections")
+                Divider().frame(height: 18)
+                Group {
+                    iconButton("textformat.size.smaller", help: "Smaller text") { viewModel.smaller() }
+                    iconButton("textformat.size.larger", help: "Larger text") { viewModel.bigger() }
+                    iconButton("doc.on.doc", help: "Copy verse") { viewModel.copyFormatted() }
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Display")
                 Spacer()
-                iconButton("textformat.size.smaller", help: "Smaller text") { viewModel.smaller() }
-                iconButton("textformat.size.larger", help: "Larger text") { viewModel.bigger() }
-                iconButton("doc.on.doc", help: "Copy verse") { viewModel.copyFormatted() }
-                iconButton(viewModel.pinned ? "pin.fill" : "pin",
-                           help: viewModel.pinned ? "Unpin — hide on focus loss" : "Pin — keep open") { viewModel.togglePin() }
-                iconButton("power", help: "Quit Daily Sutra") { NSApp.terminate(nil) }
+                Menu {
+                    Button(action: { viewModel.togglePin() }) {
+                        Image(systemName: viewModel.pinned ? "pin.fill" : "pin")
+                        Text(viewModel.pinned ? "Unpin" : "Pin")
+                    }
+                    Button(action: { NSApp.terminate(nil) }) {
+                        Image(systemName: "power")
+                        Text("Quit")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 26, height: 26)
+                }
+                .buttonStyle(.borderless)
+                .help("More")
+                .accessibilityLabel("More options")
             }
         }
     }
@@ -603,12 +714,57 @@ struct SutraView: View {
     private func iconButton(_ sf: String, help: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: sf)
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(.secondary)
-                .frame(width: 26, height: 26)
+                .frame(width: 32, height: 28)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
         .help(help)
+        .onHover { isHovered in
+            if isHovered {
+                NSCursor.pointingHand.push()
+            } else {
+                NSCursor.pop()
+            }
+        }
+    }
+}
+
+struct OnboardingOverlay: View {
+    @ObservedObject var viewModel: VerseViewModel
+    @State private var step = 0
+    let steps = [
+        ("Welcome", "You get a new verse each day. Let me show you how to navigate and explore."),
+        ("Navigate", "← → Move to previous or next verse. T returns to today's verse."),
+        ("Save Favorites", "❤ Tap to save a verse to your favorites list for quick access later."),
+        ("Browse by Date", "📅 Pick any date to see that day's verse and build your collection."),
+        ("Copy & Customize", "Copy verses to share or adjust text size with the + and − buttons.")
+    ]
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.4).ignoresSafeArea()
+            VStack(spacing: 20) {
+                Text(steps[step].0).font(.headline)
+                Text(steps[step].1).font(.body).lineLimit(3)
+                HStack(spacing: 12) {
+                    if step > 0 {
+                        Button("Back") { step -= 1 }.buttonStyle(.bordered)
+                    }
+                    Spacer()
+                    Button("Skip") { viewModel.completeOnboarding() }.buttonStyle(.bordered)
+                    if step < steps.count - 1 {
+                        Button("Next") { step += 1 }.buttonStyle(.borderedProminent)
+                    } else {
+                        Button("Got it!") { viewModel.completeOnboarding() }.buttonStyle(.borderedProminent)
+                    }
+                }
+            }
+            .padding(20)
+            .frame(maxWidth: 320)
+            .background(Color(nsColor: .controlBackgroundColor))
+            .cornerRadius(8)
+        }
     }
 }
