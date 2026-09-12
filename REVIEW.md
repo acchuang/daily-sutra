@@ -335,9 +335,73 @@
 
 ---
 
+## Automated Code Review Findings
+
+**4 bugs detected by code-review agent**:
+
+1. **P1 - Division by Zero in Icon Scaling** (line 78)
+   - Corrupted/invalid PNG loads with 0×0 size → `22/max(0,0)` crashes
+   ```swift
+   // BEFORE (unsafe)
+   let s = maxDim / max(img.size.width, img.size.height)
+   
+   // AFTER (safe)
+   let maxSize = max(img.size.width, img.size.height)
+   guard maxSize > 0 else { return }  // Skip if image invalid
+   let s = maxDim / maxSize
+   ```
+
+2. **P1 - NSEvent Monitor Leak** (line 96)
+   - Keyboard monitor added but never removed; `keyMonitor` stored but no cleanup
+   ```swift
+   // Need to add in deinit or applicationDidFinishLaunching cleanup:
+   if let monitor = keyMonitor {
+     NSEvent.removeMonitor(monitor)
+   }
+   ```
+
+3. **P2 - Panel Off-Screen Positioning** (line 152)
+   - Panel height (560px) not clamped to screen bounds; can extend below visible area
+   ```swift
+   // BEFORE
+   origin.y -= 2  // Gap, but no max clamp
+   
+   // AFTER
+   origin.y = min(origin.y, visible.maxY - panel.frame.height)
+   ```
+
+4. **P2 - Unsafe Date Component Extraction** (line 654)
+   - Notification time picker fallback hides timezone/DST edge cases
+   ```swift
+   // BEFORE
+   var notifyTime: Binding<Date> {
+     Calendar.current.date(...) ?? Date()  // Masks failures
+   
+   // AFTER
+   var notifyTime: Binding<Date> {
+     guard let date = Calendar.current.date(...) else {
+       assertionFailure("Failed to construct notification time")
+       return Date()
+     }
+     return date
+   ```
+
+---
+
 ## Summary: Bug Fix & Enhancement Roadmap
 
 ### Critical (v1.0.10 patch)
+
+**Bugs Found** (automated code review):
+
+| Bug | Line | Severity | Effort | Impact |
+|-----|------|----------|--------|--------|
+| Division by zero in icon scaling | 78 | P1 | 30m | App crashes if icon corrupted |
+| NSEvent monitor never removed | 96 | P1 | 30m | Memory leak on each app launch |
+| Panel extends off-screen | 152 | P2 | 30m | UI broken on compact displays |
+| Unsafe date component extraction | 654 | P2 | 30m | Notification time unreliable on DST |
+
+**Requests from Expert Review**:
 
 | Issue | Expert | Severity | Effort | Impact |
 |-------|--------|----------|--------|--------|
@@ -347,7 +411,7 @@
 | Error handling in notifications | Security | P1 | 1h | Silent failures |
 | verses.json parsing error UX | Architecture | P1 | 1h | App shows blank on corrupt data |
 
-**Total effort**: ~9 hours. **Result**: App meets accessibility baseline (WCAG AA), has test coverage, handles errors gracefully.
+**Total effort**: ~12 hours (4 bugs + 5 issues). **Result**: App meets accessibility baseline (WCAG AA), has test coverage, handles errors gracefully, no crashes/leaks.
 
 ### High Priority (v1.1)
 
