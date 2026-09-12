@@ -57,10 +57,6 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, no web depende
 - ⏩ **Skip anytime** — get to the verse immediately if you prefer
 - 💾 **Persistent tracking** — onboarding shows once, never again
 
-## Screenshot
-
-![Daily Sutra main panel showing verse with explanation and blessing](docs/screenshot-preview.png)
-
 Main view: Verse + explanation + blessing. Tap "Full Text" for classical translations.
 
 ## Installation
