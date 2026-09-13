@@ -127,3 +127,68 @@ final class VerseTextTests: XCTestCase {
         XCTAssertTrue(out.contains("May your Monday be light."), "falls back to the default blessing")
     }
 }
+
+/// VerseStore loading and fallback behavior.
+final class VerseStoreTests: XCTestCase {
+    func testLoadFromValidJSON() {
+        let testFileURL = URL(fileURLWithPath: #filePath)
+        let rootURL = testFileURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let jsonURL = rootURL.appendingPathComponent("Sources/DailySutra/Resources/verses.json")
+        let verses = VerseStore.load(from: jsonURL)
+        XCTAssertGreaterThan(verses.count, 0, "should load verses from valid JSON")
+        XCTAssertFalse(verses[0].id.isEmpty, "loaded verses should have valid IDs")
+    }
+
+    func testFallbackOnInvalidPath() {
+        let invalidURL = URL(fileURLWithPath: "/nonexistent/verses.json")
+        let verses = VerseStore.load(from: invalidURL)
+        XCTAssertEqual(verses.count, 1, "fallback provides a single placeholder verse")
+        XCTAssertEqual(verses[0].id, "diamond_0", "fallback verse has placeholder ID")
+    }
+
+    func testFallbackOnMissingResource() {
+        // Bundle.main.url returns nil for missing resources; VerseStore should handle gracefully
+        let verses = VerseStore.load(from: Bundle(for: type(of: self)))
+        XCTAssertEqual(verses.count, 1, "should return fallback on missing resource")
+    }
+}
+
+/// Edge cases and malformed data handling.
+final class VerseEdgeCasesTests: XCTestCase {
+    func testEmptyVersePoolStillReturnsValidIndex() {
+        let index = DailyPick.index(count: 0, for: Date())
+        XCTAssertEqual(index, 0, "empty pool should return 0")
+    }
+
+    func testSingleVerseAlwaysReturnsZero() {
+        for day in 0..<365 {
+            let d = Calendar(identifier: .gregorian).date(byAdding: .day, value: day, to: Date())!
+            let i = DailyPick.index(count: 1, for: d)
+            XCTAssertEqual(i, 0, "single verse must always return index 0")
+        }
+    }
+
+    func testLargeVersePoolDistribution() {
+        let pool = 1000
+        let cal = Calendar(identifier: .gregorian)
+        let base = cal.date(from: DateComponents(year: 2024, month: 1, day: 1))!
+        var indices = Set<Int>()
+        for day in 0..<1000 {
+            let d = cal.date(byAdding: .day, value: day, to: base)!
+            indices.insert(DailyPick.index(count: pool, for: d))
+        }
+        XCTAssertGreaterThan(indices.count, pool / 2, "1000 days should cover >50% of a 1000-verse pool")
+    }
+
+    func testVerseWithMultilineContent() {
+        let v = Verse(index: 1, sutra: "diamond", titleZh: "", titleEn: "",
+                      zh: "line1\nline2", en: "line1\nline2",
+                      verseEn: "verse line 1\nverse line 2", verseZh: "詩行一\n詩行二",
+                      explEn: "explanation 1\nexplanation 2", explZh: "解釋1\n解釋2",
+                      meaning: "meaning 1\nmeaning 2", meaningZh: "意義1\n意義2")
+        let text = VerseText(zh: false)
+        XCTAssertTrue(text.quote(v).contains("\n"), "multiline verse should preserve newlines")
+        let first = text.firstLine(v)
+        XCTAssertFalse(first.contains("\n"), "firstLine should extract only first line")
+    }
+}
