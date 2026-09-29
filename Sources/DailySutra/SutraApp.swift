@@ -213,13 +213,17 @@ final class VerseViewModel: ObservableObject {
     @Published var favorites: Set<String>      // verse.id strings e.g. "diamond_1"
     @Published var showFavorites = false
     @Published var showHistory = false
+    @Published var showSettings = false
+    @Published var showShortcuts = false
     @Published var pinned = false      // keep panel open across focus loss
     @Published var showOnboarding = false
     @Published var notifyDeniedAlert = false
+    @Published var copyFeedback = false
+    @Published var warmPaper: Bool
 
     private static let kLang = "AppLang", kScale = "FontScale", kFavs = "Favorites"
     private static let kNotify = "NotifyEnabled", kNotifyAt = "NotifyMinutes"
-    private static let kOnboarded = "OnboardingCompleted"
+    private static let kOnboarded = "OnboardingCompleted", kWarmPaper = "WarmPaperTheme"
     private static let defaultNotifyMinutes = 8 * 60
     private var rolloverTimer: Timer?
     private var currentDay: Int = 0
@@ -234,6 +238,7 @@ final class VerseViewModel: ObservableObject {
         self.notifyEnabled = UserDefaults.standard.bool(forKey: Self.kNotify)
         let savedMinutes = UserDefaults.standard.object(forKey: Self.kNotifyAt) as? Int
         self.notifyMinutes = savedMinutes ?? Self.defaultNotifyMinutes
+        self.warmPaper = UserDefaults.standard.bool(forKey: Self.kWarmPaper)
         if let data = UserDefaults.standard.data(forKey: Self.kFavs) {
             if let ids = try? JSONDecoder().decode([String].self, from: data) {
                 self.favorites = Set(ids)
@@ -321,6 +326,11 @@ final class VerseViewModel: ObservableObject {
         if notifyEnabled { refreshNotifications() }   // queued bodies are language-specific
     }
 
+    func setWarmPaper(_ enabled: Bool) {
+        warmPaper = enabled
+        UserDefaults.standard.set(enabled, forKey: Self.kWarmPaper)
+    }
+
     var isCurrentFavorite: Bool {
         guard let v = current else { return false }
         return favorites.contains(v.id)
@@ -334,6 +344,24 @@ final class VerseViewModel: ObservableObject {
             favorites.insert(v.id)
         }
         persistFavorites()
+    }
+
+    func toggleFavorites() {
+        showHistory = false
+        showSettings = false
+        showFavorites.toggle()
+    }
+
+    func toggleHistory() {
+        showFavorites = false
+        showSettings = false
+        showHistory.toggle()
+    }
+
+    func toggleSettings() {
+        showFavorites = false
+        showHistory = false
+        showSettings.toggle()
     }
 
     // Show a saved favorite directly — it belongs to no particular day.
@@ -389,6 +417,13 @@ final class VerseViewModel: ObservableObject {
         return Date()
     }
 
+    var isToday: Bool {
+        if case .day(let d) = showing {
+            return Calendar.current.isDateInToday(d)
+        }
+        return false
+    }
+
     var current: Verse? {
         if case .verse(let v) = showing { return v }
         return verse(on: displayedDate)
@@ -404,7 +439,12 @@ final class VerseViewModel: ObservableObject {
 
     func prev() { shiftDay(-1) }
     func next() { shiftDay(1) }
-    func reset() { showing = .day(Date()) }
+    func reset() {
+        showing = .day(Date())
+        showFavorites = false
+        showHistory = false
+        showSettings = false
+    }
     func togglePin() { pinned.toggle() }
 
     // MARK: - Derived display text
@@ -428,10 +468,15 @@ final class VerseViewModel: ObservableObject {
     private func copy(_ v: Verse, on date: Date) {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text.clipboard(v, on: date), forType: .string)
+        copyFeedback = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) { [weak self] in
+            self?.copyFeedback = false
+        }
     }
 }
 
 struct SutraView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @ObservedObject var viewModel: VerseViewModel
     @State private var historyDate = Date()
     @State private var showExpanded = false
@@ -441,101 +486,47 @@ struct SutraView: View {
             VStack(alignment: .leading, spacing: 14) {
                 header
                 Divider()
-                if viewModel.showHistory {
+                if viewModel.showSettings {
+                    settingsView
+                } else if viewModel.showHistory {
                     historyView
                 } else if viewModel.showFavorites {
                     favoritesList
                 } else if showExpanded, let v = viewModel.current {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 14) {
-                            Text(viewModel.lang == .en ? "Classical Translation" : "文言文譯文")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                            Text(viewModel.lang == .en ? v.en : v.zh)
-                                .font(.system(size: 12, design: .serif))
-                                .fixedSize(horizontal: false, vertical: true)
-                                .textSelection(.enabled)
-                                .foregroundStyle(.secondary)
-                            Divider().padding(.vertical, 8)
-                            Button(action: { showExpanded = false }) {
-                                HStack {
-                                    Image(systemName: "chevron.up")
-                                    Text("Collapse")
-                                }
-                                .font(.caption)
-                            }
-                            .buttonStyle(.bordered)
-                        }
-                        .padding(.horizontal, 2)
-                    }
+                    fullTextView(verse: v)
                 } else {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 12) {
-                            if let v = viewModel.current {
-                                let s = viewModel.fontScale
-                                let explanation = viewModel.text.explanation(v)
-                                Text(viewModel.text.quote(v))
-                                    .font(.system(size: 20 * s, weight: .semibold, design: .serif))
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .textSelection(.enabled)
-                                    .accessibilityElement(children: .ignore)
-                                    .accessibilityLabel("Verse: \(viewModel.text.quote(v))")
-                                if !explanation.isEmpty {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        Text(viewModel.lang == .en ? "Meaning:" : "意解：")
-                                            .font(.system(size: 11 * s, weight: .semibold))
-                                            .foregroundStyle(.secondary)
-                                        Text(explanation)
-                                            .font(.system(size: 13 * s, weight: .regular))
-                                            .foregroundStyle(.secondary)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                            .textSelection(.enabled)
-                                            .accessibilityElement(children: .ignore)
-                                            .accessibilityLabel("Explanation: \(explanation)")
-                                    }
-                                }
-                                Divider()
-                                Text(viewModel.blessing)
-                                    .font(.system(size: 13 * s, weight: .light, design: .serif))
-                                    .italic()
-                                    .foregroundStyle(.tertiary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .textSelection(.enabled)
-                                    .accessibilityElement(children: .ignore)
-                                    .accessibilityLabel("Blessing: \(viewModel.blessing)")
-                                Button(action: { showExpanded = true }) {
-                                    HStack {
-                                        Image(systemName: "book.circle")
-                                        Text("Full Text")
-                                    }
-                                    .font(.caption)
-                                }
-                                .buttonStyle(.bordered)
-                                Spacer(minLength: 0)
-                            } else {
-                                Text("No verses loaded.")
-                            }
-                        }
-                        .padding(.horizontal, 2)
-                    }
+                    verseCardView
                 }
                 controls
             }
             .padding(20)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .background {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(.regularMaterial)
+                    if viewModel.warmPaper {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(colorScheme == .dark
+                                  ? Color(red: 0.22, green: 0.17, blue: 0.13).opacity(0.42)
+                                  : Color(red: 0.98, green: 0.95, blue: 0.89).opacity(0.55))
+                    }
+                }
+            }
 
-            if viewModel.showOnboarding {
-                OnboardingOverlay(viewModel: viewModel)
+            if viewModel.showShortcuts {
+                shortcutsOverlay
             }
         }
-        .alert("Notifications Not Enabled", isPresented: $viewModel.notifyDeniedAlert) {
-            Button("Open System Settings") {
+        .alert(viewModel.lang == .zh ? "通知權限未開啟" : "Notifications Not Enabled", isPresented: $viewModel.notifyDeniedAlert) {
+            Button(viewModel.lang == .zh ? "打開系統設定" : "Open System Settings") {
                 NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Library/PreferencePanes/Notifications.prefPane"))
             }
-            Button("Cancel", role: .cancel) { }
+            Button(viewModel.lang == .zh ? "取消" : "Cancel", role: .cancel) { }
         } message: {
-            Text("Daily Sutra needs notification permission. Enable it in System Settings > Notifications > Daily Sutra.")
+            Text(viewModel.lang == .zh ?
+                 "Daily Sutra 需要通知權限以發送每日日課提醒。請在「系統設定 > 通知 > Daily Sutra」中啟用。" :
+                 "Daily Sutra needs notification permission to send daily reminders. Enable it in System Settings > Notifications > Daily Sutra.")
         }
     }
 
@@ -546,121 +537,578 @@ struct SutraView: View {
     }()
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 8) {
-                if let icon = Self.cachedHeaderIcon {
-                    Image(nsImage: icon)
-                        .resizable()
-                        .renderingMode(.template)
-                        .foregroundStyle(.tertiary)
-                        .frame(width: 16, height: 16)
-                }
-                Text(viewModel.headerTitle)
-                    .font(.system(size: 14, weight: .semibold, design: .serif))
-                    .lineLimit(1)
-                Spacer()
-                Menu {
-                    Picker("Language", selection: $viewModel.lang) {
-                        ForEach(AppLang.allCases, id: \.self) { l in Text(l.label).tag(l) }
-                    }
-                    .onChange(of: viewModel.lang) { _, new in viewModel.setLang(new) }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.tertiary)
-                }
-                .buttonStyle(.borderless)
-                .help("Settings")
-            }
-            if let v = viewModel.current {
-                Text("\(viewModel.lang == .en ? "Chapter" : "第")\(v.index) · \(v.sutra.uppercased())")
-                    .font(.system(size: 11, weight: .regular, design: .default))
+        HStack(spacing: 8) {
+            if let icon = Self.cachedHeaderIcon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .renderingMode(.template)
                     .foregroundStyle(.secondary)
+                    .frame(width: 16, height: 16)
             }
+            Text(viewModel.headerTitle)
+                .font(.system(size: 14, weight: .semibold, design: .serif))
+                .lineLimit(1)
+            Spacer()
+
+            // One-tap Language switcher pill
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    viewModel.setLang(viewModel.lang == .en ? .zh : .en)
+                }
+            }) {
+                Text(viewModel.lang == .en ? "中" : "EN")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .help(viewModel.lang == .en ? "切換至繁體中文" : "Switch to English")
+            .accessibilityLabel(viewModel.lang == .en ? "Switch language to Traditional Chinese" : "切換語言至英文")
+
+            // Pin button
+            Button(action: { viewModel.togglePin() }) {
+                Image(systemName: viewModel.pinned ? "pin.fill" : "pin")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(viewModel.pinned ? Color.accentColor : Color.secondary)
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.plain)
+            .help(viewModel.pinned ? (viewModel.lang == .zh ? "取消釘選視窗" : "Unpin panel") : (viewModel.lang == .zh ? "釘選視窗" : "Pin panel"))
+            .accessibilityLabel(viewModel.pinned ? (viewModel.lang == .zh ? "取消釘選視窗" : "Unpin panel") : (viewModel.lang == .zh ? "釘選視窗" : "Pin panel"))
+
+            // Settings button
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    viewModel.toggleSettings()
+                }
+            }) {
+                Image(systemName: viewModel.showSettings ? "gearshape.fill" : "gearshape")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(viewModel.showSettings ? Color.accentColor : Color.secondary)
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.plain)
+            .help(viewModel.lang == .zh ? "偏好設定" : "Preferences")
+            .accessibilityLabel(viewModel.lang == .zh ? "偏好設定" : "Preferences")
+        }
+    }
+
+    private var verseCardView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                if viewModel.showOnboarding {
+                    onboardingBanner
+                }
+
+                if let v = viewModel.current {
+                    let s = viewModel.fontScale
+                    let explanation = viewModel.text.explanation(v)
+
+                    // Pull quote
+                    Text(viewModel.text.quote(v))
+                        .font(.system(size: 20 * s, weight: .semibold, design: .serif))
+                        .fixedSize(horizontal: false, vertical: true)
+                        .lineSpacing(3)
+                        .textSelection(.enabled)
+                        .accessibilityLabel(viewModel.lang == .zh ? "經文：\(viewModel.text.quote(v))" : "Verse: \(viewModel.text.quote(v))")
+
+                    // Unified Explanation paragraph without duplicate label
+                    if !explanation.isEmpty {
+                        Text(explanation)
+                            .font(.system(size: 13 * s, weight: .regular))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(4)
+                            .textSelection(.enabled)
+                            .accessibilityLabel(explanation)
+                    }
+
+                    Divider()
+
+                    // Closing blessing: italics for English, upright for Chinese
+                    Text(viewModel.blessing)
+                        .font(.system(size: 13 * s, weight: .light, design: .serif))
+                        .italic(viewModel.lang == .en)
+                        .foregroundStyle(.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                        .accessibilityLabel(viewModel.blessing)
+
+                    // Full text button
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            showExpanded = true
+                        }
+                    }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "book.pages")
+                            Text(viewModel.lang == .zh ? "完整經文與對照" : "Full Classical Text")
+                        }
+                        .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityLabel(viewModel.lang == .zh ? "閱讀完整文言文與對照" : "Read full classical text and translation")
+
+                    Spacer(minLength: 0)
+                } else {
+                    Text(viewModel.lang == .zh ? "尚未載入經文。" : "No verses loaded.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, 2)
+        }
+    }
+
+    private var onboardingBanner: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 14))
+                .foregroundStyle(Color.accentColor)
+                .padding(.top, 2)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(viewModel.lang == .zh ? "歡迎來到 Daily Sutra" : "Welcome to Daily Sutra")
+                    .font(.system(size: 12, weight: .semibold))
+                Text(viewModel.lang == .zh ?
+                     "每日隨曆日推送一則金剛經與心經法語。使用 ← / → 瀏覽日期，按 T 回到今日，⌘C 複製經文。" :
+                     "One verse each day for reflection. Use ← / → to browse, T for today, ⌘C to copy.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .lineSpacing(2)
+            }
+            Spacer(minLength: 0)
+            Button(action: {
+                withAnimation { viewModel.completeOnboarding() }
+            }) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.tertiary)
+                    .padding(4)
+            }
+            .buttonStyle(.plain)
+            .help(viewModel.lang == .zh ? "關閉指引" : "Dismiss guide")
+            .accessibilityLabel(viewModel.lang == .zh ? "關閉歡迎指引" : "Dismiss welcome guide")
+        }
+        .padding(10)
+        .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+        .padding(.bottom, 4)
+    }
+
+    private func fullTextView(verse v: Verse) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Text(viewModel.lang == .en ? "Classical Translation" : "文言文譯文")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            showExpanded = false
+                        }
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                            Text(viewModel.lang == .zh ? "返回經句" : "Back to Verse")
+                        }
+                        .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                }
+
+                Text(viewModel.lang == .en ? v.en : v.zh)
+                    .font(.system(size: 13 * viewModel.fontScale, design: .serif))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(5)
+                    .textSelection(.enabled)
+                    .foregroundStyle(.primary)
+
+                Divider().padding(.vertical, 4)
+
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        showExpanded = false
+                    }
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.up")
+                        Text(viewModel.lang == .zh ? "收合完整經文" : "Collapse")
+                    }
+                    .font(.caption)
+                }
+                .buttonStyle(.bordered)
+            }
+            .padding(.horizontal, 2)
+        }
+    }
+
+    private var historyView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(viewModel.lang == .zh ? "依日期瀏覽" : "Browse by Date")
+                    .font(.system(size: 13, weight: .semibold))
+                Spacer()
+                Button(action: {
+                    withAnimation { viewModel.showHistory = false }
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark")
+                        Text(viewModel.lang == .zh ? "返回" : "Back")
+                    }
+                    .font(.caption)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+            }
+
+            DatePicker("", selection: $historyDate, in: ...Date(), displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .labelsHidden()
+
+            if let v = viewModel.verse(on: historyDate) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(viewModel.text.title(v, on: historyDate))
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                    Text(viewModel.text.firstLine(v))
+                        .font(.system(size: 12, design: .serif))
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                }
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+            }
+
+            HStack {
+                Button(viewModel.lang == .zh ? "前往此日經文" : "Go to this date") {
+                    withAnimation { viewModel.jumpToDate(historyDate) }
+                }
+                .buttonStyle(.borderedProminent)
+
+                Spacer()
+
+                Button(viewModel.lang == .zh ? "返回今日" : "Return to Today") {
+                    withAnimation { viewModel.reset() }
+                }
+                .buttonStyle(.bordered)
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    private var favoritesList: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(viewModel.lang == .zh ? "收藏經文 (\(viewModel.favoriteVerses.count))" : "Favorites (\(viewModel.favoriteVerses.count))")
+                    .font(.system(size: 13, weight: .semibold))
+                Spacer()
+                Button(action: {
+                    withAnimation { viewModel.showFavorites = false }
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark")
+                        Text(viewModel.lang == .zh ? "返回" : "Back")
+                    }
+                    .font(.caption)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+            }
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 4) {
+                    if viewModel.favoriteVerses.isEmpty {
+                        VStack(spacing: 8) {
+                            Image(systemName: "heart")
+                                .font(.system(size: 24))
+                                .foregroundStyle(.tertiary)
+                            Text(viewModel.lang == .zh ?
+                                 "尚未收藏任何經文。\n在經文下方輕點愛心圖示即可加入收藏。" :
+                                 "No favorites yet.\nTap the heart icon on any verse to save it here.")
+                                .font(.caption)
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 40)
+                    } else {
+                        ForEach(viewModel.favoriteVerses) { v in
+                            Button {
+                                withAnimation { viewModel.show(v) }
+                            } label: {
+                                HStack(alignment: .center, spacing: 8) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(viewModel.text.firstLine(v))
+                                            .font(.system(size: 12, design: .serif))
+                                            .lineLimit(1)
+                                            .truncationMode(.tail)
+                                            .foregroundStyle(.primary)
+                                        Text("\(viewModel.lang == .zh ? "第" : "Chapter ")\(v.index)\(viewModel.lang == .zh ? "章" : "")")
+                                            .font(.system(size: 10))
+                                            .foregroundStyle(.tertiary)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption2)
+                                        .foregroundStyle(.tertiary)
+                                }
+                                .padding(.vertical, 6)
+                                .padding(.horizontal, 4)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            Divider()
+                        }
+                    }
+                }
+                .padding(.horizontal, 2)
+            }
+        }
+    }
+
+    private var settingsView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    Text(viewModel.lang == .zh ? "設定與偏好" : "Settings & Preferences")
+                        .font(.system(size: 13, weight: .semibold))
+                    Spacer()
+                    Button(action: {
+                        withAnimation { viewModel.showSettings = false }
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "xmark")
+                            Text(viewModel.lang == .zh ? "完成" : "Done")
+                        }
+                        .font(.caption)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(viewModel.lang == .zh ? "系統與提醒" : "System & Reminders")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    Toggle(viewModel.lang == .zh ? "開機時自動啟動" : "Launch at Login", isOn: Binding(
+                        get: { viewModel.launchAtLogin },
+                        set: { _ in viewModel.toggleLaunchAtLogin() }
+                    ))
+                    .toggleStyle(.checkbox)
+                    .font(.caption)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Toggle(viewModel.lang == .zh ? "每日定時提醒" : "Daily reminder", isOn: Binding(
+                            get: { viewModel.notifyEnabled },
+                            set: { _ in viewModel.toggleNotify() }
+                        ))
+                        .toggleStyle(.checkbox)
+                        .font(.caption)
+
+                        if viewModel.notifyEnabled {
+                            HStack {
+                                Text(viewModel.lang == .zh ? "提醒時間：" : "Time:")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                DatePicker("", selection: notifyTime, displayedComponents: .hourAndMinute)
+                                    .labelsHidden()
+                                    .datePickerStyle(.field)
+                                    .font(.caption)
+                                    .fixedSize()
+                            }
+                            .padding(.leading, 20)
+                        }
+                    }
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(viewModel.lang == .zh ? "文字大小" : "Text Scale")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    HStack(spacing: 12) {
+                        Button(action: { viewModel.smaller() }) {
+                            Image(systemName: "textformat.size.smaller")
+                                .font(.system(size: 12))
+                        }
+                        .buttonStyle(.bordered)
+                        .help(viewModel.lang == .zh ? "縮小文字" : "Smaller text")
+                        .accessibilityLabel(viewModel.lang == .zh ? "縮小文字" : "Smaller text")
+
+                        Text("\(Int(viewModel.fontScale * 100))%")
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 44, alignment: .center)
+
+                        Button(action: { viewModel.bigger() }) {
+                            Image(systemName: "textformat.size.larger")
+                                .font(.system(size: 12))
+                        }
+                        .buttonStyle(.bordered)
+                        .help(viewModel.lang == .zh ? "放大文字" : "Larger text")
+                        .accessibilityLabel(viewModel.lang == .zh ? "放大文字" : "Larger text")
+
+                        Spacer()
+
+                        Button(viewModel.lang == .zh ? "重設" : "Reset") {
+                            viewModel.fontScale = 1.0
+                            UserDefaults.standard.set(1.0, forKey: "FontScale")
+                        }
+                        .buttonStyle(.borderless)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(viewModel.lang == .zh ? "閱讀氛圍" : "Reading Ambience")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    Toggle(viewModel.lang == .zh ? "溫潤宣紙色調" : "Warm Paper Tint", isOn: Binding(
+                        get: { viewModel.warmPaper },
+                        set: { viewModel.setWarmPaper($0) }
+                    ))
+                    .toggleStyle(.checkbox)
+                    .font(.caption)
+
+                    Text(viewModel.lang == .zh ? "為晨間靜心閱讀增添柔和的宣紙底色，舒緩雙眼。" : "Adds a gentle parchment warmth for quiet morning contemplation.")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
+                        .padding(.leading, 20)
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Button(action: { viewModel.showShortcuts = true }) {
+                        HStack {
+                            Image(systemName: "command")
+                            Text(viewModel.lang == .zh ? "快捷鍵指引" : "Keyboard Shortcuts")
+                            Spacer()
+                            Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary)
+                        }
+                        .font(.caption)
+                        .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+
+                    Divider()
+
+                    Button(action: { NSApp.terminate(nil) }) {
+                        HStack {
+                            Image(systemName: "power")
+                            Text(viewModel.lang == .zh ? "結束 Daily Sutra" : "Quit Daily Sutra")
+                            Spacer()
+                            Text("⌘Q").font(.caption2).foregroundStyle(.tertiary)
+                        }
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
+            .padding(.horizontal, 2)
         }
     }
 
     private var controls: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 12) {
-                Toggle("Launch at Login", isOn: Binding(
-                    get: { viewModel.launchAtLogin },
-                    set: { _ in viewModel.toggleLaunchAtLogin() }
-                ))
-                .toggleStyle(.checkbox)
-                .font(.caption)
-                Spacer()
-                Toggle("Daily reminder", isOn: Binding(
-                    get: { viewModel.notifyEnabled },
-                    set: { _ in viewModel.toggleNotify() }
-                ))
-                .toggleStyle(.checkbox)
-                .font(.caption)
-                if viewModel.notifyEnabled {
-                    DatePicker("", selection: notifyTime, displayedComponents: .hourAndMinute)
-                        .labelsHidden()
-                        .datePickerStyle(.field)
-                        .font(.caption)
-                        .fixedSize()
-                }
+        HStack(spacing: 6) {
+            // Day navigation
+            iconButton("chevron.left", help: viewModel.lang == .zh ? "上一日 (←)" : "Previous verse (←)") {
+                viewModel.prev()
             }
-            Divider()
-            HStack(spacing: 4) {
-                Group {
-                    iconButton("chevron.left", help: "Previous verse") { viewModel.prev() }
-                    iconButton("arrow.counterclockwise", help: "Today's verse") { viewModel.reset() }
-                    iconButton("chevron.right", help: "Next verse") { viewModel.next() }
+
+            // Today button with active state indicator
+            Button(action: {
+                withAnimation { viewModel.reset() }
+            }) {
+                HStack(spacing: 4) {
+                    Image(systemName: viewModel.isToday ? "calendar" : "calendar.badge.clock")
+                        .font(.system(size: 11))
+                    Text(viewModel.lang == .zh ? "今日" : "Today")
+                        .font(.system(size: 11, weight: .medium))
                 }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("Navigation")
-                Divider().frame(height: 18)
-                Group {
-                    iconButton(viewModel.isCurrentFavorite ? "heart.fill" : "heart",
-                               help: viewModel.isCurrentFavorite ? "Remove from favorites" : "Save to favorites") { viewModel.toggleFavorite() }
-                    iconButton("list.bullet", help: "Favorites") {
-                        viewModel.showHistory = false
-                        viewModel.showFavorites.toggle()
-                    }
-                    iconButton("calendar", help: "Browse by date") {
-                        viewModel.showFavorites = false
-                        viewModel.showHistory.toggle()
-                    }
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("Collections")
-                Divider().frame(height: 18)
-                Group {
-                    iconButton("textformat.size.smaller", help: "Smaller text") { viewModel.smaller() }
-                    iconButton("textformat.size.larger", help: "Larger text") { viewModel.bigger() }
-                    iconButton("doc.on.doc", help: "Copy verse") { viewModel.copyFormatted() }
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("Display")
-                Spacer()
-                Menu {
-                    Button(action: { viewModel.togglePin() }) {
-                        Image(systemName: viewModel.pinned ? "pin.fill" : "pin")
-                        Text(viewModel.pinned ? "Unpin" : "Pin")
-                    }
-                    Button(action: { NSApp.terminate(nil) }) {
-                        Image(systemName: "power")
-                        Text("Quit")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 26, height: 26)
-                }
-                .buttonStyle(.borderless)
-                .help("More")
-                .accessibilityLabel("More options")
+                .foregroundStyle(viewModel.isToday ? .secondary : Color.accentColor)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(viewModel.isToday ? Color.clear : Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
             }
+            .buttonStyle(.plain)
+            .help(viewModel.lang == .zh ? "回到今日經文 (T)" : "Return to today (T)")
+            .accessibilityLabel(viewModel.lang == .zh ? "回到今日經文" : "Return to today's verse")
+
+            iconButton("chevron.right", help: viewModel.lang == .zh ? "下一日 (→)" : "Next verse (→)") {
+                viewModel.next()
+            }
+
+            Divider().frame(height: 16).padding(.horizontal, 2)
+
+            // Secondary contemplative actions
+            iconButton(viewModel.isCurrentFavorite ? "heart.fill" : "heart",
+                       help: viewModel.isCurrentFavorite ?
+                            (viewModel.lang == .zh ? "從收藏中移除" : "Remove from favorites") :
+                            (viewModel.lang == .zh ? "加入收藏" : "Save to favorites"),
+                       activeColor: viewModel.isCurrentFavorite ? .red : nil) {
+                viewModel.toggleFavorite()
+            }
+
+            iconButton("bookmark",
+                       help: viewModel.lang == .zh ? "收藏經文清單" : "Favorites list",
+                       activeColor: viewModel.showFavorites ? Color.accentColor : nil) {
+                withAnimation { viewModel.toggleFavorites() }
+            }
+
+            iconButton("calendar",
+                       help: viewModel.lang == .zh ? "依日期瀏覽" : "Browse by date",
+                       activeColor: viewModel.showHistory ? Color.accentColor : nil) {
+                withAnimation { viewModel.toggleHistory() }
+            }
+
+            Spacer()
+
+            // Copy button with feedback animation
+            Button(action: {
+                viewModel.copyFormatted()
+            }) {
+                HStack(spacing: 4) {
+                    Image(systemName: viewModel.copyFeedback ? "checkmark" : "doc.on.doc")
+                        .font(.system(size: 11, weight: .medium))
+                    if viewModel.copyFeedback {
+                        Text(viewModel.lang == .zh ? "已複製" : "Copied")
+                            .font(.system(size: 11, weight: .medium))
+                    }
+                }
+                .foregroundStyle(viewModel.copyFeedback ? Color.green : Color.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(viewModel.copyFeedback ? Color.green.opacity(0.12) : Color.clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .help(viewModel.lang == .zh ? "複製經文 (⌘C)" : "Copy formatted verse (⌘C)")
+            .accessibilityLabel(viewModel.lang == .zh ? "複製經文" : "Copy formatted verse")
         }
     }
 
-    // The reminder time is stored as minutes since midnight; DatePicker wants a
-    // Date, so map through today's date and keep only hour/minute.
     private var notifyTime: Binding<Date> {
         Binding(
             get: {
@@ -678,110 +1126,72 @@ struct SutraView: View {
             })
     }
 
-    private var historyView: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            DatePicker("", selection: $historyDate, in: ...Date(), displayedComponents: .date)
-                .datePickerStyle(.graphical)
-                .labelsHidden()
-            if let v = viewModel.verse(on: historyDate) {
-                Text(viewModel.text.firstLine(v))
-                    .font(.system(size: 12, design: .serif))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-            }
-            Button("Go to this date") { viewModel.jumpToDate(historyDate) }
-                .buttonStyle(.borderless)
-            Spacer(minLength: 0)
-        }
-    }
-
-    private var favoritesList: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 2) {
-                if viewModel.favoriteVerses.isEmpty {
-                    Text("No favorites yet. Tap the heart on a verse to save it.")
-                        .font(.caption).foregroundStyle(.secondary)
-                        .padding(.vertical, 20)
-                } else {
-                    ForEach(viewModel.favoriteVerses) { v in
-                        Button {
-                            viewModel.show(v)
-                        } label: {
-                            HStack(alignment: .top) {
-                                Text(viewModel.text.firstLine(v))
-                                    .font(.system(size: 13, design: .serif))
-                                    .lineLimit(1)
-                                    .truncationMode(.tail)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.caption2).foregroundStyle(.tertiary)
-                            }
-                            .contentShape(Rectangle())
-                            .padding(.vertical, 6)
-                        }
-                        .buttonStyle(.plain)
-                        Divider()
-                    }
-                }
-            }
-            .padding(.horizontal, 2)
-        }
-    }
-
-    private func iconButton(_ sf: String, help: String, action: @escaping () -> Void) -> some View {
+    private func iconButton(_ sf: String, help: String, activeColor: Color? = nil, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: sf)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(.secondary)
-                .frame(width: 32, height: 28)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(activeColor ?? .secondary)
+                .frame(width: 28, height: 26)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(.plain)
         .help(help)
-        .onHover { isHovered in
-            if isHovered {
-                NSCursor.pointingHand.push()
-            } else {
-                NSCursor.pop()
-            }
-        }
+        .accessibilityLabel(help)
     }
-}
 
-struct OnboardingOverlay: View {
-    @ObservedObject var viewModel: VerseViewModel
-    @State private var step = 0
-    let steps = [
-        ("Welcome", "You get a new verse each day. Let me show you how to navigate and explore."),
-        ("Navigate", "← → Move to previous or next verse. T returns to today's verse."),
-        ("Save Favorites", "❤ Tap to save a verse to your favorites list for quick access later."),
-        ("Browse by Date", "📅 Pick any date to see that day's verse and build your collection."),
-        ("Copy & Customize", "Copy verses to share or adjust text size with the + and − buttons.")
-    ]
-
-    var body: some View {
+    private var shortcutsOverlay: some View {
         ZStack {
-            Color.black.opacity(0.4).ignoresSafeArea()
-            VStack(spacing: 20) {
-                Text(steps[step].0).font(.headline)
-                Text(steps[step].1).font(.body).lineLimit(3)
-                HStack(spacing: 12) {
-                    if step > 0 {
-                        Button("Back") { step -= 1 }.buttonStyle(.bordered)
-                    }
+            Color.black.opacity(0.3).ignoresSafeArea()
+                .onTapGesture { viewModel.showShortcuts = false }
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Text(viewModel.lang == .zh ? "鍵盤快捷鍵" : "Keyboard Shortcuts")
+                        .font(.headline)
                     Spacer()
-                    Button("Skip") { viewModel.completeOnboarding() }.buttonStyle(.bordered)
-                    if step < steps.count - 1 {
-                        Button("Next") { step += 1 }.buttonStyle(.borderedProminent)
-                    } else {
-                        Button("Got it!") { viewModel.completeOnboarding() }.buttonStyle(.borderedProminent)
+                    Button(action: { viewModel.showShortcuts = false }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.tertiary)
                     }
+                    .buttonStyle(.plain)
+                }
+
+                VStack(spacing: 8) {
+                    shortcutRow(keys: "←", desc: viewModel.lang == .zh ? "上一日經文" : "Previous verse")
+                    shortcutRow(keys: "→", desc: viewModel.lang == .zh ? "下一日經文" : "Next verse")
+                    shortcutRow(keys: "T", desc: viewModel.lang == .zh ? "回到今日經文" : "Return to today's verse")
+                    shortcutRow(keys: "⌘C", desc: viewModel.lang == .zh ? "複製整則經文與意解" : "Copy formatted verse")
+                    shortcutRow(keys: "Esc", desc: viewModel.lang == .zh ? "關閉浮動視窗" : "Close panel")
+                }
+
+                Divider().padding(.vertical, 2)
+
+                HStack {
+                    Spacer()
+                    Button(viewModel.lang == .zh ? "我知道了" : "Done") {
+                        viewModel.showShortcuts = false
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
             }
-            .padding(20)
-            .frame(maxWidth: 320)
+            .padding(18)
+            .frame(maxWidth: 300)
             .background(Color(nsColor: .controlBackgroundColor))
-            .cornerRadius(8)
+            .cornerRadius(10)
+            .shadow(radius: 12)
+        }
+    }
+
+    private func shortcutRow(keys: String, desc: String) -> some View {
+        HStack {
+            Text(desc)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(keys)
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
         }
     }
 }

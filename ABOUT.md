@@ -56,23 +56,20 @@ The explanations and reflective meanings in the app are the author's own interpr
 - **Deterministic data** — the date is the only input needed to regenerate any verse, forever. No database, no API calls, no central server required.
 - **Open source** — everything is readable, forkable, and modifiable. You can audit the code, modify it, redistribute it.
 
-## Why Diamond Sutra?
+## The Sutras: Diamond & Heart
 
-The Diamond Sutra (金剛般若波羅蜜經) is one of the most studied Buddhist texts. It teaches the dissolution of fixed concepts—that nothing has permanent, independent existence.
+Daily Sutra draws randomly from a combined pool of 42 contemplations: the 32 chapters of the **Diamond Sutra** (金剛般若波羅蜜經) and 10 curated sections of the **Heart Sutra** (般若波羅蜜多心經).
 
-This can be heavy philosophy. Daily Sutra takes it verse by verse, with modern interpretation, so that the teachings are accessible without needing to read classical Buddhist scholarship.
+Both sacred texts teach the profound wisdom of prajñāpāramitā—the dissolution of fixed concepts and the insight that all forms are empty of separate, permanent selfhood. By presenting both sutras in a unified daily pool where origin tags recede into the background, the app invites readers to receive each day's verse purely on its own contemplative merits.
 
-Why not the Heart Sutra? The Heart Sutra is shorter (just 10 lines) and covers similar terrain in a more compact form. Daily Sutra focuses on the Diamond Sutra's 32 chapters, giving you a gradual journey through its ideas.
+## Accessibility & Craft
 
-## Accessibility & Inclusion
-
-- Keyboard-first: all features work without a mouse
-- Screen reader support: accessibility labels on buttons and text sections
-- Light and dark mode: icons and colors adapt automatically
-- Font scaling: 0.85× to 1.8×, and respects system text size preferences
-- Bilingual: English and Traditional Chinese (繁體中文) with equal depth
-
-Simplified Chinese (简体) support is listed as a possible future addition, but the app prioritizes Traditional Chinese's scholarly heritage in the Diamond Sutra translation lineage.
+- **Keyboard-first**: full navigation without mouse dependency (← / → to browse, T for today, ⌘C to copy, Esc to close).
+- **VoiceOver & Screen Readers**: fully discrete button focus, localized labels, and clean semantic structure.
+- **Reading Ambience**: optional warm paper / parchment tint (宣紙色調) for a soft, meditative morning atmosphere.
+- **Light and dark mode**: automatically adapts to macOS appearance with organic cream and charcoal-amber warmth.
+- **Font scaling**: 0.85× to 1.8× with live percentage feedback.
+- **Bilingual**: English and Traditional Chinese (繁體中文) with 1-tap switching and full parity.
 
 ## Privacy
 
@@ -82,20 +79,21 @@ Daily Sutra collects no data. The app does not:
 - Track which verses you read
 - Send telemetry
 
-Your favorites, font size, language preference, and notification settings are stored locally in UserDefaults. Only you can access them.
+Your favorites, font size, language preference, reading ambience, and notification settings are stored locally in UserDefaults. Only you can access them.
 
 ## License
 
 Source code: **MIT License** — use freely, modify freely, redistribute freely.
 
-Diamond Sutra classical texts: **Public domain** (Kumārajīva's 5th-century Chinese translation, Gemmell's 1912 English translation).
+Diamond Sutra and Heart Sutra classical texts: **Public domain** (Kumārajīva's 5th-century Chinese translation, Xuanzang's 7th-century Chinese translation, Gemmell's 1912 English translation).
 
 Explanations, meanings, blessings, and app design: **MIT License** (author's original work).
 
 ## Acknowledgments
 
 ### Scholarship
-- Kumārajīva (鳩摩羅什) for the classical Chinese translation (5th century)
+- Kumārajīva (鳩摩羅什) for the classical Chinese translation of the Diamond Sutra (5th century)
+- Xuanzang (玄奘) for the classical Chinese translation of the Heart Sutra (7th century)
 - J. Thaddeus Gemmell for the English translation (1912)
 - Modern Buddhist scholars whose work informs the app author's interpretations
 
@@ -110,7 +108,7 @@ Explanations, meanings, blessings, and app design: **MIT License** (author's ori
 
 ---
 
-**Daily Sutra v1.0.9** | Made with 🙏 for contemplation
+**Daily Sutra v1.1.0** | Made with 🙏 for contemplation
 
 If you find this app useful, consider:
 - Sharing it with friends interested in Buddhist practice

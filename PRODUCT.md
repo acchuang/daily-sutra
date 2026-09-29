@@ -51,10 +51,11 @@ Bilingual users switch languages mid-session; app maintains state and re-renders
 - Keyboard shortcuts (←/→ navigate, T today, Cmd+C copy, Esc close)
 - Daily notifications with configurable time
 - Launch at login toggle
+- Warm paper / parchment tint toggle (gentle meditative reading ambience, persisted in UserDefaults)
 - Pin/unpin panel (stays visible across app switches when pinned)
-- Copy formatted verse (title, verse, explanation, blessing, weekday)
+- Copy formatted verse (title, verse, explanation, blessing, weekday) with visual feedback
 - Full text toggle (classical translations + commentary)
-- Onboarding flow (5-step first-run intro)
+- Gentle inline onboarding and persistent keyboard shortcuts guide
 
 **Constraints**:
 - Menu bar app only (floating panel, not windowed)

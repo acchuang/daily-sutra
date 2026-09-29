@@ -1,38 +1,41 @@
 # Daily Sutra
 
-A contemplative macOS menu bar app delivering one verse from the **Diamond Sutra** each day, paired with modern explanation and reflective meaning.
+A contemplative macOS menu bar app delivering one verse from the **Diamond Sutra** and **Heart Sutra** each day, paired with modern explanation and reflective meaning.
 
 ![macOS](https://img.shields.io/badge/macOS-14+-blue) ![Swift](https://img.shields.io/badge/Swift-5.9+-orange) ![License](https://img.shields.io/badge/License-MIT-green)
 
 Each morning, click the menu bar lotus icon to receive a single verse with:
-- Modern English paraphrase and classical Chinese line
-- Plain-language explanation  
-- Reflective meaning (app author's interpretation)
+- Modern English paraphrase and authentic classical Chinese line
+- Plain-language explanation and reflective commentary
 - Personalized daily blessing with weekday
+- Contemplative emoji matched to the verse theme
 
-The verse is **deterministically selected by date** — same verse every day, everywhere, forever. No algorithms, no recommendations, only mathematics. Access full classical translations and extensive commentary by tapping "Full Text."
+The verse is **deterministically selected by date** across the unified pool of Diamond Sutra chapters and Heart Sutra contemplations — same verse every day, everywhere, forever. No algorithms, no recommendations, only mathematics. Access full classical translations and extensive commentary by tapping "Full Text."
 
-Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, no web dependencies.
+Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web dependencies.
 
 ## Features
 
-### Core
-- 🕉️ **32 Diamond Sutra chapters** — full classical texts, modern translations, scholarly commentary
-- 🌐 **Bilingual**: English ↔ 繁體中文, toggle anytime, one-tap language switch
+### Core & Contemplation
+- 🕉️ **42 Sutra Verses** — curated from the Diamond Sutra (32 chapters) and Heart Sutra (10 contemplations) in a single unified pool
+- 📜 **Distilled Reading Card** — serene reading view focused exclusively on scripture, reflection, and blessing
+- 🌐 **Bilingual**: English ↔ 繁體中文, instant 1-tap language switch in the header
+- 🎨 **Reading Ambience (Warm Paper Tint)** — optional soft parchment / Xuan paper (宣紙) background tint for quiet morning contemplation
 - 📅 **Deterministic daily pick** (xorshift64 algorithm) — same verse every day, everywhere, reproducible forever
-- 🎨 **Minimalist lotus icon** — contemplative design, menu bar-optimized
-- 🪟 **Floating panel** (400×560, resizable 320×400 min) — non-intrusive, draggable, dismissible
+- 🪟 **Floating panel** (400×560, resizable 320×400 min) — non-intrusive, draggable, dismissible on focus loss
 
 ### Navigation & Exploration
-- ⬅️ ➡️ **Arrow key navigation** — browse verses by calendar day
+- ⬅️ ➡️ **Arrow key navigation** — browse verses day by day
 - 📅 **Calendar picker** — jump to any past date and read that day's verse
 - ❤️ **Favorites** — save verses (heart icon), persistent list
-- 📖 **Full Text toggle** — tap "Full Text" to reveal classical translations and extensive commentary
+- 📖 **Full Text toggle** — tap "Full Text" to reveal classical translations and parallel texts
 - 🔍 **Search-free design** — intentional simplicity, no filtering or algorithms
 
-### Customization
-- 🔤 **Font scaling**: 0.85× to 1.8× (persisted)
-- 🔔 **Daily notifications** — opt-in reminder at user-selected time (default 8am)
+### Customization & Settings
+- ⚙️ **Dedicated Settings Panel** — clean preferences sheet for system and reading controls
+- 📜 **Warm Paper Tint** — toggleable soothing cream / charcoal amber undertone
+- 🔤 **Font scaling**: 0.85× to 1.8× (persisted with percentage readout)
+- 🔔 **Daily notifications** — opt-in reminder at user-selected time (race-free scheduling)
 - 📍 **Pin panel** — keep visible across app switches (toggleable)
 - 🚀 **Launch at Login** — auto-start via `SMAppService`
 - 🌓 **Light/dark mode** — auto-adapts to system appearance
@@ -42,20 +45,19 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, no web depende
 |----------|--------|
 | ← / → | Previous / Next verse |
 | T | Return to today |
-| Cmd+C | Copy formatted verse |
+| Cmd+C | Copy formatted verse (with checkmark confirmation) |
 | Esc | Close panel |
-| Language toggle | Header menu (⋮) |
+| 1-tap Pill | Switch between English (EN) and Traditional Chinese (中) |
+| VoiceOver | Fully discrete button navigation with localized labels |
 
 ### Copy & Share
 - 📋 **Formatted copy** (Cmd+C) — verse + title + explanation + blessing + weekday
-- 🖇️ **Works in any app** — paste into email, notes, social media
+- ✅ **Instant visual feedback** — button confirms with an animated checkmark upon copy
+- 🖇️ **Universal paste** — paste into notes, journaling apps, email, or messages
 
-### Onboarding
-- 🎓 **5-step first-run flow** — interactive guide to navigation, favorites, browsing, copying
-- ⏩ **Skip anytime** — get to the verse immediately if you prefer
-- 💾 **Persistent tracking** — onboarding shows once, never again
-
-Main view: Verse + explanation + blessing. Tap "Full Text" for classical translations.
+### Onboarding & Guidance
+- 🌸 **Gentle inline onboarding** — non-blocking first-run greeting with 1-tap dismissal
+- ⌨️ **Keyboard shortcuts cheatsheet** — accessible anytime from Settings
 
 ## Installation
 
@@ -152,4 +154,4 @@ For major changes, open an issue first.
 
 ---
 
-**Daily Sutra v1.0.9** | Made with 🙏 for contemplation and practice
+**Daily Sutra v1.1.0** | Made with 🙏 for contemplation and practice

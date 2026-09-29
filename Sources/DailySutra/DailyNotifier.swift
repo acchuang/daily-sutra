@@ -32,9 +32,18 @@ enum DailyNotifier {
     static func cancelAll() {
         guard isBundled else { return }
         let center = UNUserNotificationCenter.current()
+        let cal = Calendar.current
+        let now = Date()
+        let candidateIds = (-2...horizonDays + 2).compactMap { offset -> String? in
+            guard let d = cal.date(byAdding: .day, value: offset, to: now) else { return nil }
+            return idPrefix + ISO8601DateFormatter.dayFormatter.string(from: d)
+        }
+        center.removePendingNotificationRequests(withIdentifiers: candidateIds)
         center.getPendingNotificationRequests { requests in
             let ids = requests.map(\.identifier).filter { $0.hasPrefix(idPrefix) }
-            center.removePendingNotificationRequests(withIdentifiers: ids)
+            if !ids.isEmpty {
+                center.removePendingNotificationRequests(withIdentifiers: ids)
+            }
         }
     }
 
@@ -42,11 +51,16 @@ enum DailyNotifier {
     /// starting with the next occurrence.
     static func reschedule(verses: [Verse], text: VerseText, hour: Int, minute: Int) {
         guard isBundled, !verses.isEmpty else { return }
-        cancelAll()
-
         let cal = Calendar.current
         let now = Date()
         let center = UNUserNotificationCenter.current()
+
+        // Synchronously purge active horizon requests before scheduling new ones
+        let candidateIds = (-2...horizonDays + 2).compactMap { offset -> String? in
+            guard let d = cal.date(byAdding: .day, value: offset, to: now) else { return nil }
+            return idPrefix + ISO8601DateFormatter.dayFormatter.string(from: d)
+        }
+        center.removePendingNotificationRequests(withIdentifiers: candidateIds)
 
         for dayOffset in 0...horizonDays {
             guard let day = cal.date(byAdding: .day, value: dayOffset, to: now),
