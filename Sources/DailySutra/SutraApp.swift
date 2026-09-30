@@ -4,6 +4,7 @@ import Combine
 import ServiceManagement
 import UserNotifications
 import SutraKit
+import QuartzCore
 
 @main
 struct DiamondSutraBarApp: App {
@@ -81,8 +82,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
                 guard let self, let panel = self.panel else { return }
                 panel.isMovableByWindowBackground = !attach
                 if attach {
-                    self.snapToMenubar()
+                    self.snapToMenubar(animate: true)
                 }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, let vm = self.viewModel, vm.attachToMenubar, let panel = self.panel, panel.isVisible else { return }
+                self.snapToMenubar(animate: false)
             }
             .store(in: &cancellables)
 
@@ -177,21 +186,50 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    @MainActor func snapToMenubar() {
+    @MainActor func snapToMenubar(animate: Bool = false) {
         guard let button = statusItem?.button, let panel else { return }
-        if let btnFrame = button.window?.convertToScreen(button.bounds) {
-            var origin = btnFrame.origin
-            origin.y -= 2                       // small gap below the menu bar
-            let screen = button.window?.screen ?? NSScreen.main
-            let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1920, height: 1080)
-            origin.x = min(max(origin.x, visible.minX), visible.maxX - panel.frame.width)
-            origin.y = min(origin.y, visible.maxY - panel.frame.height)
-            panel.setFrameTopLeftPoint(origin)
-            if let vm = viewModel, !vm.attachToMenubar {
-                UserDefaults.standard.set(panel.frame.origin.x, forKey: "CustomPanelOriginX")
-                UserDefaults.standard.set(panel.frame.origin.y, forKey: "CustomPanelOriginY")
-                UserDefaults.standard.set(true, forKey: "HasCustomPanelOrigin")
+        guard let btnFrame = button.window?.convertToScreen(button.bounds) else { return }
+
+        let screen = button.window?.screen ?? NSScreen.main
+        let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1920, height: 1080)
+
+        let panelWidth = panel.frame.width
+        let panelHeight = panel.frame.height
+
+        // Horizontal centering beneath the status item icon, clamped to screen margins
+        let desiredX = btnFrame.midX - (panelWidth / 2)
+        let minX = visible.minX + 8
+        let maxX = max(minX, visible.maxX - panelWidth - 8)
+        let targetX = min(max(desiredX, minX), maxX)
+
+        // Vertical anchoring: top edge sits directly below the menu bar
+        let gap: CGFloat = 2
+        let desiredTopY = btnFrame.minY - gap
+        let maxTopY = visible.maxY - gap
+        let targetTopY = min(desiredTopY, maxTopY)
+
+        // Cocoa origin is bottom-left
+        var targetOriginY = targetTopY - panelHeight
+        if targetOriginY < visible.minY && panelHeight <= visible.height {
+            targetOriginY = visible.minY + 8
+        }
+
+        let targetFrame = NSRect(x: targetX, y: targetOriginY, width: panelWidth, height: panelHeight)
+
+        if animate && panel.isVisible {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.2
+                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                panel.animator().setFrame(targetFrame, display: true)
             }
+        } else {
+            panel.setFrame(targetFrame, display: true)
+        }
+
+        if let vm = viewModel, !vm.attachToMenubar {
+            UserDefaults.standard.set(panel.frame.origin.x, forKey: "CustomPanelOriginX")
+            UserDefaults.standard.set(panel.frame.origin.y, forKey: "CustomPanelOriginY")
+            UserDefaults.standard.set(true, forKey: "HasCustomPanelOrigin")
         }
     }
 
@@ -209,7 +247,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
                 return
             }
         }
-        snapToMenubar()
+        snapToMenubar(animate: false)
     }
 
     @MainActor func windowDidMove(_ notification: Notification) {
@@ -218,6 +256,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
         UserDefaults.standard.set(origin.x, forKey: "CustomPanelOriginX")
         UserDefaults.standard.set(origin.y, forKey: "CustomPanelOriginY")
         UserDefaults.standard.set(true, forKey: "HasCustomPanelOrigin")
+    }
+
+    @MainActor func windowDidResize(_ notification: Notification) {
+        guard let panel, let vm = viewModel, vm.attachToMenubar else { return }
+        guard let button = statusItem?.button, let btnFrame = button.window?.convertToScreen(button.bounds) else { return }
+        let screen = button.window?.screen ?? NSScreen.main
+        let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1920, height: 1080)
+        let panelWidth = panel.frame.width
+        let panelHeight = panel.frame.height
+
+        let desiredX = btnFrame.midX - (panelWidth / 2)
+        let minX = visible.minX + 8
+        let maxX = max(minX, visible.maxX - panelWidth - 8)
+        let targetX = min(max(desiredX, minX), maxX)
+
+        let targetTopY = min(btnFrame.minY - 2, visible.maxY - 2)
+        let targetOriginY = targetTopY - panelHeight
+        panel.setFrameOrigin(NSPoint(x: targetX, y: targetOriginY))
     }
 
     // Right-click context menu on the menu-bar icon.
@@ -258,7 +314,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
     @MainActor @objc func menuShowVerse(_ s: Any?) { openPanel() }
     @MainActor @objc func menuCopyVerse(_ s: Any?) { viewModel?.copyTodayVerse() }
     @MainActor @objc func menuToggleAttach(_ s: Any?) { viewModel?.toggleAttachToMenubar() }
-    @MainActor @objc func menuSnapToMenubar(_ s: Any?) { snapToMenubar() }
+    @MainActor @objc func menuSnapToMenubar(_ s: Any?) { snapToMenubar(animate: true) }
     @objc func menuQuit(_ s: Any?) { NSApp.terminate(nil) }
 }
 
@@ -1109,7 +1165,7 @@ struct SutraView: View {
 
                     if !viewModel.attachToMenubar {
                         Button(action: {
-                            (NSApp.delegate as? AppDelegate)?.snapToMenubar()
+                            (NSApp.delegate as? AppDelegate)?.snapToMenubar(animate: true)
                         }) {
                             HStack(spacing: 4) {
                                 Image(systemName: "arrow.up.to.line")

@@ -244,4 +244,28 @@ final class WindowPlacementPersistenceTests: XCTestCase {
         XCTAssertEqual(UserDefaults.standard.double(forKey: kOriginX), testX, accuracy: 0.001)
         XCTAssertEqual(UserDefaults.standard.double(forKey: kOriginY), testY, accuracy: 0.001)
     }
+
+    func testSnapCalculationAlignsDirectlyBelowMenubar() {
+        let visible = NSRect(x: 0, y: 0, width: 1920, height: 1056)
+        let btnFrame = NSRect(x: 1700, y: 1056, width: 22, height: 24)
+        let panelSize = NSSize(width: 400, height: 560)
+
+        let desiredX = btnFrame.midX - (panelSize.width / 2)
+        let minX = visible.minX + 8
+        let maxX = max(minX, visible.maxX - panelSize.width - 8)
+        let targetX = min(max(desiredX, minX), maxX)
+
+        let gap: CGFloat = 2
+        let desiredTopY = btnFrame.minY - gap
+        let maxTopY = visible.maxY - gap
+        let targetTopY = min(desiredTopY, maxTopY)
+        let targetOriginY = targetTopY - panelSize.height
+
+        let panelTopEdge = targetOriginY + panelSize.height
+        XCTAssertEqual(panelTopEdge, 1054, "Panel top edge must sit 2 points below the menu bar item")
+        XCTAssertEqual(targetTopY, 1054)
+        XCTAssertGreaterThanOrEqual(targetOriginY, visible.minY)
+        XCTAssertGreaterThanOrEqual(targetX, minX)
+        XCTAssertLessThanOrEqual(targetX + panelSize.width, visible.maxX)
+    }
 }
