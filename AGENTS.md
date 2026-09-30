@@ -58,12 +58,13 @@ belongs to is not shown.
 
 The panel displays, per the selected language (中 | EN, persisted in
 `UserDefaults` key `AppLang`): header `<weekday> — Chapter <n>` (`<weekday> — 第<n>章` in 中, where `n` is the verse's per-sutra index — uniform across Diamond and Heart so the sutra stays hidden), the verse (pull-quote in EN; classical line in 中), a single `Explanation:` / `解釋：` paragraph that merges the explanation and the reflective meaning, then a closing per-verse blessing line (from `blessing`/`blessingZh`, with `{weekday}` substituted), ending in a per-verse contemplative emoji (theme-matched to the verse, e.g. 🪷 for the bodhisattva vow, 🛶 for the raft, 🪟 for the window) rather than a uniform 🙏. No sutra name is shown. Prev/Next/Today nav,
-A−/A+ font scale (persisted in `FontScale`, 0.85–1.8), optional warm paper tint (persisted in `WarmPaperTheme`), copy with visual feedback, and Quit.
+A−/A+ font scale (persisted in `FontScale`, 0.85–1.8), optional warm paper tint (persisted in `WarmPaperTheme`), window placement mode (persisted in `AttachToMenubar`, default true; custom origin in `CustomPanelOriginX`, `CustomPanelOriginY`, `HasCustomPanelOrigin`), copy with visual feedback, and Quit.
 Keyboard shortcuts while the panel is key: ←/→ prev/next, `T` today, `Esc` close,
 `⌘C` copy the full formatted verse (defers to native selection-copy when text is
 selected). Right-click the menu-bar icon for a context menu (Show Verse / Copy
-Today's Verse / Quit). The panel is movable (drag the body), and a pin toggle
-keeps it open across focus loss (`hidesOnDeactivate` is bound to `VerseViewModel.pinned`).
+Today's Verse / Attach to Menu Bar / Snap to Menu Bar / Quit). The panel can either be
+anchored directly beneath the menu bar status item or freely dragged across the desktop,
+and a pin toggle keeps it open across focus loss (`hidesOnDeactivate` is bound to `VerseViewModel.pinned`).
 The daily pick and weekday re-roll automatically at local midnight while the app
 stays open (a 60s day-rollover timer resets to today's verse).
 Default panel 400×560, min 320×400, user-resizable.

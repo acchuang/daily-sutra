@@ -22,7 +22,7 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web depen
 - 🌐 **Bilingual**: English ↔ 繁體中文, instant 1-tap language switch in the header
 - 🎨 **Reading Ambience (Warm Paper Tint)** — optional soft parchment / Xuan paper (宣紙) background tint for quiet morning contemplation
 - 📅 **Deterministic daily pick** (xorshift64 algorithm) — same verse every day, everywhere, reproducible forever
-- 🪟 **Floating panel** (400×560, resizable 320×400 min) — non-intrusive, draggable, dismissible on focus loss
+- 🪟 **Floating & dockable panel** (400×560, resizable 320×400 min) — choose between anchored under the menu bar or freely draggable anywhere on screen, dismissible on focus loss
 
 ### Navigation & Exploration
 - ⬅️ ➡️ **Arrow key navigation** — browse verses day by day
@@ -33,6 +33,7 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web depen
 
 ### Customization & Settings
 - ⚙️ **Dedicated Settings Panel** — clean preferences sheet for system and reading controls
+- 📌 **Window Placement (Attached vs Draggable)** — switch between anchored under the menu bar or freely draggable across screens; remembers custom position and provides instant "Snap to Menu Bar"
 - 📜 **Warm Paper Tint** — toggleable soothing cream / charcoal amber undertone
 - 🔤 **Font scaling**: 0.85× to 1.8× (persisted with percentage readout)
 - 🔔 **Daily notifications** — opt-in reminder at user-selected time (race-free scheduling)
@@ -40,14 +41,16 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web depen
 - 🚀 **Launch at Login** — auto-start via `SMAppService`
 - 🌓 **Light/dark mode** — auto-adapts to system appearance
 
-### Accessibility & Keyboard
-| Shortcut | Action |
-|----------|--------|
+### Accessibility & Controls
+| Shortcut / Control | Action |
+|--------------------|--------|
 | ← / → | Previous / Next verse |
 | T | Return to today |
 | Cmd+C | Copy formatted verse (with checkmark confirmation) |
 | Esc | Close panel |
 | 1-tap Pill | Switch between English (EN) and Traditional Chinese (中) |
+| Header Dock Icon | Toggle between attached to menu bar and freely draggable mode |
+| Right-click Icon | Menu bar context menu (Show Verse, Copy Verse, Attach / Snap to Menu Bar, Quit) |
 | VoiceOver | Fully discrete button navigation with localized labels |
 
 ### Copy & Share

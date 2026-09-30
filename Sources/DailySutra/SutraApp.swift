@@ -58,7 +58,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
         panel.level = .floating
         panel.minSize = NSSize(width: 320, height: 400)
         panel.isReleasedWhenClosed = false
-        panel.isMovableByWindowBackground = true   // borderless → drag by the body
+        panel.isMovableByWindowBackground = !vm.attachToMenubar
         // Use NSHostingView as contentView (not contentViewController) so the
         // window keeps its 400x560 frame; a flexible SwiftUI frame inside a
         // contentViewController collapses to a 0 fitting size and renders blank.
@@ -72,6 +72,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
         vm.$pinned
             .receive(on: RunLoop.main)
             .sink { [weak self] pinned in self?.panel?.hidesOnDeactivate = !pinned }
+            .store(in: &cancellables)
+
+        // Attach to menu bar toggle: lock under status item or enable dragging.
+        vm.$attachToMenubar
+            .receive(on: RunLoop.main)
+            .sink { [weak self] attach in
+                guard let self, let panel = self.panel else { return }
+                panel.isMovableByWindowBackground = !attach
+                if attach {
+                    self.snapToMenubar()
+                }
+            }
             .store(in: &cancellables)
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -139,7 +151,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
         return false
     }
 
-    @objc func togglePanel(_ sender: Any?) {
+    @MainActor @objc func togglePanel(_ sender: Any?) {
         guard let panel else { return }
         // Right-click on the menu-bar icon → context menu (no toggle).
         if NSApp.currentEvent?.type == .rightMouseUp {
@@ -153,9 +165,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
         }
     }
 
-    private func openPanel() {
+    @MainActor private func openPanel() {
+        guard let panel else { return }
+        let isAttached = viewModel?.attachToMenubar ?? true
+        if isAttached {
+            snapToMenubar()
+        } else {
+            restoreSavedPositionOrSnap()
+        }
+        panel.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @MainActor func snapToMenubar() {
         guard let button = statusItem?.button, let panel else { return }
-        // Place panel top-left just under the status item button, clamped to screen bounds.
         if let btnFrame = button.window?.convertToScreen(button.bounds) {
             var origin = btnFrame.origin
             origin.y -= 2                       // small gap below the menu bar
@@ -164,16 +187,52 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
             origin.x = min(max(origin.x, visible.minX), visible.maxX - panel.frame.width)
             origin.y = min(origin.y, visible.maxY - panel.frame.height)
             panel.setFrameTopLeftPoint(origin)
+            if let vm = viewModel, !vm.attachToMenubar {
+                UserDefaults.standard.set(panel.frame.origin.x, forKey: "CustomPanelOriginX")
+                UserDefaults.standard.set(panel.frame.origin.y, forKey: "CustomPanelOriginY")
+                UserDefaults.standard.set(true, forKey: "HasCustomPanelOrigin")
+            }
         }
-        panel.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @MainActor private func restoreSavedPositionOrSnap() {
+        guard let panel else { return }
+        if UserDefaults.standard.bool(forKey: "HasCustomPanelOrigin") {
+            let x = UserDefaults.standard.double(forKey: "CustomPanelOriginX")
+            let y = UserDefaults.standard.double(forKey: "CustomPanelOriginY")
+            let savedPoint = NSPoint(x: x, y: y)
+            let panelRect = NSRect(origin: savedPoint, size: panel.frame.size)
+            let screens = NSScreen.screens
+            let onScreen = screens.contains { $0.visibleFrame.intersects(panelRect) }
+            if onScreen {
+                panel.setFrameOrigin(savedPoint)
+                return
+            }
+        }
+        snapToMenubar()
+    }
+
+    @MainActor func windowDidMove(_ notification: Notification) {
+        guard let panel, let vm = viewModel, !vm.attachToMenubar else { return }
+        let origin = panel.frame.origin
+        UserDefaults.standard.set(origin.x, forKey: "CustomPanelOriginX")
+        UserDefaults.standard.set(origin.y, forKey: "CustomPanelOriginY")
+        UserDefaults.standard.set(true, forKey: "HasCustomPanelOrigin")
     }
 
     // Right-click context menu on the menu-bar icon.
-    private func showMenu(from button: NSStatusBarButton) {
+    @MainActor private func showMenu(from button: NSStatusBarButton) {
         let menu = NSMenu()
         menu.addItem(withTitle: "Show Verse", action: #selector(menuShowVerse(_:)), keyEquivalent: "")
         menu.addItem(withTitle: "Copy Today's Verse", action: #selector(menuCopyVerse(_:)), keyEquivalent: "")
+        menu.addItem(.separator())
+        let isAttached = viewModel?.attachToMenubar ?? true
+        let attachItem = NSMenuItem(title: "Attach to Menu Bar", action: #selector(menuToggleAttach(_:)), keyEquivalent: "")
+        attachItem.state = isAttached ? .on : .off
+        menu.addItem(attachItem)
+        if !isAttached {
+            menu.addItem(withTitle: "Snap to Menu Bar", action: #selector(menuSnapToMenubar(_:)), keyEquivalent: "")
+        }
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit Daily Sutra", action: #selector(menuQuit(_:)), keyEquivalent: "q")
         for item in menu.items { item.target = self }
@@ -198,6 +257,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
 
     @MainActor @objc func menuShowVerse(_ s: Any?) { openPanel() }
     @MainActor @objc func menuCopyVerse(_ s: Any?) { viewModel?.copyTodayVerse() }
+    @MainActor @objc func menuToggleAttach(_ s: Any?) { viewModel?.toggleAttachToMenubar() }
+    @MainActor @objc func menuSnapToMenubar(_ s: Any?) { snapToMenubar() }
     @objc func menuQuit(_ s: Any?) { NSApp.terminate(nil) }
 }
 
@@ -220,10 +281,11 @@ final class VerseViewModel: ObservableObject {
     @Published var notifyDeniedAlert = false
     @Published var copyFeedback = false
     @Published var warmPaper: Bool
+    @Published var attachToMenubar: Bool
 
     private static let kLang = "AppLang", kScale = "FontScale", kFavs = "Favorites"
     private static let kNotify = "NotifyEnabled", kNotifyAt = "NotifyMinutes"
-    private static let kOnboarded = "OnboardingCompleted", kWarmPaper = "WarmPaperTheme"
+    private static let kOnboarded = "OnboardingCompleted", kWarmPaper = "WarmPaperTheme", kAttach = "AttachToMenubar"
     private static let defaultNotifyMinutes = 8 * 60
     private var rolloverTimer: Timer?
     private var currentDay: Int = 0
@@ -239,6 +301,11 @@ final class VerseViewModel: ObservableObject {
         let savedMinutes = UserDefaults.standard.object(forKey: Self.kNotifyAt) as? Int
         self.notifyMinutes = savedMinutes ?? Self.defaultNotifyMinutes
         self.warmPaper = UserDefaults.standard.bool(forKey: Self.kWarmPaper)
+        if UserDefaults.standard.object(forKey: Self.kAttach) == nil {
+            self.attachToMenubar = true
+        } else {
+            self.attachToMenubar = UserDefaults.standard.bool(forKey: Self.kAttach)
+        }
         if let data = UserDefaults.standard.data(forKey: Self.kFavs) {
             if let ids = try? JSONDecoder().decode([String].self, from: data) {
                 self.favorites = Set(ids)
@@ -329,6 +396,15 @@ final class VerseViewModel: ObservableObject {
     func setWarmPaper(_ enabled: Bool) {
         warmPaper = enabled
         UserDefaults.standard.set(enabled, forKey: Self.kWarmPaper)
+    }
+
+    func setAttachToMenubar(_ v: Bool) {
+        attachToMenubar = v
+        UserDefaults.standard.set(v, forKey: Self.kAttach)
+    }
+
+    func toggleAttachToMenubar() {
+        setAttachToMenubar(!attachToMenubar)
     }
 
     var isCurrentFavorite: Bool {
@@ -566,6 +642,25 @@ struct SutraView: View {
             .buttonStyle(.plain)
             .help(viewModel.lang == .en ? "切換至繁體中文" : "Switch to English")
             .accessibilityLabel(viewModel.lang == .en ? "Switch language to Traditional Chinese" : "切換語言至英文")
+
+            // Attach to Menu Bar vs Draggable toggle button
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    viewModel.toggleAttachToMenubar()
+                }
+            }) {
+                Image(systemName: viewModel.attachToMenubar ? "menubar.dock.rectangle" : "arrow.up.and.down.and.arrow.left.and.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(viewModel.attachToMenubar ? Color.secondary : Color.accentColor)
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.plain)
+            .help(viewModel.attachToMenubar
+                  ? (viewModel.lang == .zh ? "視窗已依附選單列（點擊切換為自由拖曳）" : "Attached to menu bar (Click to make draggable)")
+                  : (viewModel.lang == .zh ? "自由拖曳視窗（點擊依附至選單列）" : "Draggable window (Click to attach to menu bar)"))
+            .accessibilityLabel(viewModel.attachToMenubar
+                                ? (viewModel.lang == .zh ? "視窗已依附選單列" : "Window attached to menu bar")
+                                : (viewModel.lang == .zh ? "自由拖曳視窗" : "Draggable window"))
 
             // Pin button
             Button(action: { viewModel.togglePin() }) {
@@ -990,6 +1085,42 @@ struct SutraView: View {
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
                         .padding(.leading, 20)
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(viewModel.lang == .zh ? "視窗位置" : "Window Placement")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    Toggle(viewModel.lang == .zh ? "依附於選單列" : "Attach to Menu Bar", isOn: Binding(
+                        get: { viewModel.attachToMenubar },
+                        set: { viewModel.setAttachToMenubar($0) }
+                    ))
+                    .toggleStyle(.checkbox)
+                    .font(.caption)
+
+                    Text(viewModel.lang == .zh ? "取消勾選後可自由拖曳視窗至螢幕任意位置，並記憶位置。" : "When unchecked, you can freely drag the window anywhere on screen and remember its position.")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
+                        .padding(.leading, 20)
+
+                    if !viewModel.attachToMenubar {
+                        Button(action: {
+                            (NSApp.delegate as? AppDelegate)?.snapToMenubar()
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.up.to.line")
+                                Text(viewModel.lang == .zh ? "重置至選單列下方" : "Snap to Menu Bar")
+                            }
+                            .font(.caption)
+                        }
+                        .buttonStyle(.bordered)
+                        .padding(.leading, 20)
+                        .padding(.top, 2)
+                    }
                 }
                 .padding(10)
                 .frame(maxWidth: .infinity, alignment: .leading)

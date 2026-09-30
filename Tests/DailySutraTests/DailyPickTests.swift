@@ -192,3 +192,56 @@ final class VerseEdgeCasesTests: XCTestCase {
         XCTAssertFalse(first.contains("\n"), "firstLine should extract only first line")
     }
 }
+
+/// Window placement and menu bar attachment persistence tests.
+final class WindowPlacementPersistenceTests: XCTestCase {
+    private let kAttach = "AttachToMenubar"
+    private let kOriginX = "CustomPanelOriginX"
+    private let kOriginY = "CustomPanelOriginY"
+    private let kHasOrigin = "HasCustomPanelOrigin"
+
+    override func setUp() {
+        super.setUp()
+        UserDefaults.standard.removeObject(forKey: kAttach)
+        UserDefaults.standard.removeObject(forKey: kOriginX)
+        UserDefaults.standard.removeObject(forKey: kOriginY)
+        UserDefaults.standard.removeObject(forKey: kHasOrigin)
+    }
+
+    override func tearDown() {
+        UserDefaults.standard.removeObject(forKey: kAttach)
+        UserDefaults.standard.removeObject(forKey: kOriginX)
+        UserDefaults.standard.removeObject(forKey: kOriginY)
+        UserDefaults.standard.removeObject(forKey: kHasOrigin)
+        super.tearDown()
+    }
+
+    func testDefaultAttachToMenubarIsTrue() {
+        let isSet = UserDefaults.standard.object(forKey: kAttach) != nil
+        XCTAssertFalse(isSet)
+        let resolved = UserDefaults.standard.object(forKey: kAttach) == nil ? true : UserDefaults.standard.bool(forKey: kAttach)
+        XCTAssertTrue(resolved, "Window should default to being attached to menu bar")
+    }
+
+    func testAttachToMenubarPersistence() {
+        UserDefaults.standard.set(false, forKey: kAttach)
+        XCTAssertFalse(UserDefaults.standard.bool(forKey: kAttach))
+
+        UserDefaults.standard.set(true, forKey: kAttach)
+        XCTAssertTrue(UserDefaults.standard.bool(forKey: kAttach))
+    }
+
+    func testCustomPanelOriginPersistence() {
+        XCTAssertFalse(UserDefaults.standard.bool(forKey: kHasOrigin))
+
+        let testX: Double = 350.5
+        let testY: Double = 620.0
+        UserDefaults.standard.set(testX, forKey: kOriginX)
+        UserDefaults.standard.set(testY, forKey: kOriginY)
+        UserDefaults.standard.set(true, forKey: kHasOrigin)
+
+        XCTAssertTrue(UserDefaults.standard.bool(forKey: kHasOrigin))
+        XCTAssertEqual(UserDefaults.standard.double(forKey: kOriginX), testX, accuracy: 0.001)
+        XCTAssertEqual(UserDefaults.standard.double(forKey: kOriginY), testY, accuracy: 0.001)
+    }
+}

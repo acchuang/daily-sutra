@@ -65,6 +65,7 @@ Both sacred texts teach the profound wisdom of prajñāpāramitā—the dissolut
 ## Accessibility & Craft
 
 - **Keyboard-first**: full navigation without mouse dependency (← / → to browse, T for today, ⌘C to copy, Esc to close).
+- **Flexible Window Placement**: Choose between anchoring cleanly beneath the menu bar status icon or freely dragging across multiple displays, with position persistence and quick menu bar snapping.
 - **VoiceOver & Screen Readers**: fully discrete button focus, localized labels, and clean semantic structure.
 - **Reading Ambience**: optional warm paper / parchment tint (宣紙色調) for a soft, meditative morning atmosphere.
 - **Light and dark mode**: automatically adapts to macOS appearance with organic cream and charcoal-amber warmth.

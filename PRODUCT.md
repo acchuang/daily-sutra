@@ -52,13 +52,14 @@ Bilingual users switch languages mid-session; app maintains state and re-renders
 - Daily notifications with configurable time
 - Launch at login toggle
 - Warm paper / parchment tint toggle (gentle meditative reading ambience, persisted in UserDefaults)
+- Window placement toggle (anchored under menu bar vs freely draggable with coordinate persistence)
 - Pin/unpin panel (stays visible across app switches when pinned)
 - Copy formatted verse (title, verse, explanation, blessing, weekday) with visual feedback
 - Full text toggle (classical translations + commentary)
 - Gentle inline onboarding and persistent keyboard shortcuts guide
 
 **Constraints**:
-- Menu bar app only (floating panel, not windowed)
+- Menu bar companion app (resizable floating card panel, dockable to status item or freely movable)
 - macOS 14+ only
 - No cloud sync, no user accounts
 - No persistence of browse history (only favorites and date jumps)
