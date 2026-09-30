@@ -33,7 +33,7 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web depen
 
 ### Customization & Settings
 - ⚙️ **Dedicated Settings Panel** — clean preferences sheet for system and reading controls
-- 📌 **Window Placement (Attached vs Draggable)** — switch between anchored under the menu bar or freely draggable across screens; remembers custom position and provides instant "Snap to Menu Bar"
+- 📌 **Window Placement (Attached vs Draggable)** — switch between anchored directly beneath the menu bar status icon (centered with 2pt gap and screen edge margins) or freely draggable across screens with coordinate memory; includes smooth 0.2s ease-out snapping animation, resize anchoring (top edge pinned below menu bar), and an instant "Snap to Menu Bar" reset button
 - 📜 **Warm Paper Tint** — toggleable soothing cream / charcoal amber undertone
 - 🔤 **Font scaling**: 0.85× to 1.8× (persisted with percentage readout)
 - 🔔 **Daily notifications** — opt-in reminder at user-selected time (race-free scheduling)
@@ -47,6 +47,7 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web depen
 | ← / → | Previous / Next verse |
 | T | Return to today |
 | Cmd+C | Copy formatted verse (with checkmark confirmation) |
+| Cmd+, | Open Settings & Preferences sheet |
 | Esc | Close panel |
 | 1-tap Pill | Switch between English (EN) and Traditional Chinese (中) |
 | Header Dock Icon | Toggle between attached to menu bar and freely draggable mode |
@@ -106,7 +107,7 @@ Sources/
 │   ├── SutraApp.swift              # AppDelegate, VerseViewModel, SutraView, UI
 │   ├── DailyNotifier.swift         # Notifications via UserNotificationCenter
 │   └── Resources/
-│       ├── verses.json             # 32 Diamond Sutra chapters
+│       ├── verses.json             # 42 verses (32 Diamond + 10 Heart)
 │       ├── AppIcon.icns            # App icon (1024×1024 + all sizes)
 │       └── MenubarIcon.png         # Menu bar icon (18×18 + retina @2x)
 ├── SutraKit/
@@ -129,7 +130,8 @@ Sources/
 
 - **Diamond Sutra, Chinese** — Kumārajīva (鳩摩羅什) translation, public domain (5th c.)
 - **Diamond Sutra, English** — Gemmell 1912 translation (Project Gutenberg #64623, public domain)
-- **32 chapters** — fully curated with classical texts, translations, and scholarly annotations
+- **Heart Sutra, Chinese** — Xuanzang (玄奘) translation, public domain (7th c.)
+- **42 contemplations** — fully curated with classical texts, translations, and scholarly annotations
 
 ### Original Work
 
@@ -157,4 +159,4 @@ For major changes, open an issue first.
 
 ---
 
-**Daily Sutra v1.1.0** | Made with 🙏 for contemplation and practice
+**Daily Sutra v1.1.3** | Made with 🙏 for contemplation and practice
