@@ -95,6 +95,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
             }
             .store(in: &cancellables)
 
+        // Intercept and close any phantom SwiftUI Settings window, routing to the in-panel settings card
+        NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] notif in
+                guard let self, let win = notif.object as? NSWindow, win !== self.panel else { return }
+                if win.title.localizedCaseInsensitiveContains("Settings") || win.title.localizedCaseInsensitiveContains("Preferences") {
+                    win.orderOut(nil)
+                    win.close()
+                    self.openPanel()
+                    self.viewModel?.showSettings = true
+                }
+            }
+            .store(in: &cancellables)
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            for window in NSApp.windows where window !== self.panel {
+                if window.title.localizedCaseInsensitiveContains("Settings") || window.title.localizedCaseInsensitiveContains("Preferences") {
+                    window.orderOut(nil)
+                    window.close()
+                }
+            }
+        }
+
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = item.button {
             if let url = Bundle.main.url(forResource: "MenubarIcon", withExtension: "png"),
@@ -156,6 +180,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
         if !mods.contains(.command) && !mods.contains(.control) && !mods.contains(.option),
            chars == "t" {
             vm.reset(); return true
+        }
+        if mods.contains(.command), chars == "," {
+            vm.toggleSettings(); return true
         }
         return false
     }
@@ -315,6 +342,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
     @MainActor @objc func menuCopyVerse(_ s: Any?) { viewModel?.copyTodayVerse() }
     @MainActor @objc func menuToggleAttach(_ s: Any?) { viewModel?.toggleAttachToMenubar() }
     @MainActor @objc func menuSnapToMenubar(_ s: Any?) { snapToMenubar(animate: true) }
+    @MainActor @objc func showSettingsWindow(_ s: Any?) {
+        openPanel()
+        viewModel?.showSettings = true
+    }
+    @MainActor @objc func showPreferencesWindow(_ s: Any?) {
+        openPanel()
+        viewModel?.showSettings = true
+    }
     @objc func menuQuit(_ s: Any?) { NSApp.terminate(nil) }
 }
 
