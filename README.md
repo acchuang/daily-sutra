@@ -120,9 +120,8 @@ Sources/
 │       ├── verses.json             # 42 verses (32 Diamond + 10 Heart)
 │       ├── AppIcon.icns            # App icon (1024×1024 + all sizes)
 │       └── MenubarIcon.png         # Menu bar icon (18×18 + retina @2x)
-├── SutraKit/
-│   └── SutraKit.swift              # Models: Verse, VerseText, DailyPick
-└── PRODUCT.md                      # Product specification
+└── SutraKit/
+    └── SutraKit.swift              # Models: Verse, VerseText, DailyPick
 ```
 
 ### Making Changes
