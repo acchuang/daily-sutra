@@ -13,7 +13,7 @@ Contemplative practitioners and curious readers interested in Buddhist wisdom. D
 ## Product Purpose
 
 Daily Sutra delivers one verse from the Diamond Sutra each day, paired with modern explanation and reflective meaning. It makes Buddhist wisdom accessible and memorable through:
-- **Deterministic daily picks**: Same verse every day, everywhere (xorshift64 on date)
+- **Deterministic daily picks**: Same verse for the same calendar date, anywhere (xorshift64 on date)
 - **Bilingual support**: Classical and modern Chinese alongside English
 - **Contextual depth**: Verse + explanation + reflective meaning + blessing
 - **Optional deep learning**: Access full classical translations and extensive commentary
@@ -102,7 +102,7 @@ Bilingual users switch languages mid-session; app maintains state and re-renders
 
 ## Product Principles
 
-1. **One verse per day, deterministically**: No recommendations, no personalization algorithms. The same verse every day everywhere, grounded in simple mathematics (date XOR).
+1. **One verse per day, deterministically**: No recommendations, no personalization algorithms. The same verse for the same calendar date, anywhere, grounded in simple mathematics (date XOR).
 
 2. **Bilingual from the foundation**: Not English with Chinese as an afterthought. Both languages are first-class; chapter titles, blessings, explanations all exist in both.
 

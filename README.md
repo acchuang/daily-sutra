@@ -2,7 +2,9 @@
 
 A contemplative macOS menu bar app delivering one verse from the **Diamond Sutra** and **Heart Sutra** each day, paired with modern explanation and reflective meaning.
 
-![macOS](https://img.shields.io/badge/macOS-14+-blue) ![Swift](https://img.shields.io/badge/Swift-5.9+-orange) ![License](https://img.shields.io/badge/License-MIT-green)
+![macOS](https://img.shields.io/badge/macOS-14+-blue) ![Swift](https://img.shields.io/badge/Swift-5.9+-orange) ![License](https://img.shields.io/badge/License-MIT-green) [![Website](https://img.shields.io/badge/website-daily--sutra.pages.dev-c96442)](https://daily-sutra.pages.dev)
+
+🌐 **Official Site & Interactive Web Simulator**: [https://daily-sutra.pages.dev](https://daily-sutra.pages.dev)
 
 Each morning, click the menu bar lotus icon to receive a single verse with:
 - Modern English paraphrase and authentic classical Chinese line
@@ -10,7 +12,7 @@ Each morning, click the menu bar lotus icon to receive a single verse with:
 - Personalized daily blessing with weekday
 - Contemplative emoji matched to the verse theme
 
-The verse is **deterministically selected by date** across the unified pool of Diamond Sutra chapters and Heart Sutra contemplations — same verse every day, everywhere, forever. No algorithms, no recommendations, only mathematics. Access full classical translations and extensive commentary by tapping "Full Text."
+The verse is **deterministically selected by date** across the unified pool of Diamond Sutra chapters and Heart Sutra contemplations — the same verse for the same calendar date, anywhere in the world. No algorithms, no recommendations, only mathematics. Access full classical translations and extensive commentary by tapping "Full Text."
 
 Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web dependencies.
 
@@ -21,7 +23,7 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web depen
 - 📜 **Distilled Reading Card** — serene reading view focused exclusively on scripture, reflection, and blessing
 - 🌐 **Bilingual**: English ↔ 繁體中文, instant 1-tap language switch in the header
 - 🎨 **Reading Ambience (Warm Paper Tint)** — optional soft parchment / Xuan paper (宣紙) background tint for quiet morning contemplation
-- 📅 **Deterministic daily pick** (xorshift64 algorithm) — same verse every day, everywhere, reproducible forever
+- 📅 **Deterministic daily pick** (xorshift64 algorithm) — the same verse for the same calendar date, anywhere, reproducible forever
 - 🪟 **Floating & dockable panel** (400×560, resizable 320×400 min) — choose between anchored under the menu bar or freely draggable anywhere on screen, dismissible on focus loss
 
 ### Navigation & Exploration
@@ -65,7 +67,15 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web depen
 
 ## Installation
 
-### From Release (Easiest)
+### Homebrew
+
+```bash
+brew install --cask acchuang/tap/daily-sutra
+```
+
+The cask removes the quarantine flag for you, so there is no Gatekeeper step.
+
+### From Release
 
 1. Download latest `DailySutra.zip` from [Releases](https://github.com/acchuang/daily-sutra/releases)
 2. Unzip → you get `DailySutra.app`
@@ -135,6 +145,8 @@ Sources/
 
 ### Original Work
 
+The paraphrases, explanations, reflections and blessings below were drafted with AI assistance, then reviewed and edited by the author; much of the code was too.
+
 - **verseEn / explEn / meaning** — app author's modern paraphrase and reflective interpretation
 - **verseZh / explZh / meaningZh** — bilingual equivalents with traditional Chinese parity
 - **Blessings** — personalized daily closings, original to this app
@@ -159,4 +171,4 @@ For major changes, open an issue first.
 
 ---
 
-**Daily Sutra v1.1.3** | Made with 🙏 for contemplation and practice
+**Daily Sutra v1.1.4** | Made with 🙏 for contemplation and practice

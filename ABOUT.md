@@ -11,7 +11,7 @@ The app exists to support a morning ritual: open, read, close. Not to be a teach
 ### Deterministic Picks (No Algorithms)
 
 Each verse is selected by date using a simple mathematical function (xorshift64). This means:
-- **Same verse every day** — you see it in the morning, your friend sees it in Tokyo, same verse.
+- **Same verse every day** — you and a friend in Tokyo see the same verse on the same calendar date.
 - **Reproducible forever** — if the app is gone in 2050, you can regenerate the same sequence.
 - **No recommendations** — the app doesn't learn your preferences or try to optimize what you see.
 
@@ -47,7 +47,7 @@ This two-tier approach respects different use cases: the hurried morning reader 
 
 Daily Sutra was created by a practitioner interested in Buddhist wisdom and contemplative practice. The app is not affiliated with any Buddhist organization or lineage.
 
-The explanations and reflective meanings in the app are the author's own interpretations—not doctrinal claims, not the canonical sutra text, but a sincere effort to make the verses meaningful for contemporary English and Chinese readers.
+The explanations, reflective meanings and blessings were drafted with AI assistance and then reviewed and edited by the author, as was much of the code. They are interpretations—not doctrinal claims, not the canonical sutra text, but a sincere effort to make the verses meaningful for contemporary English and Chinese readers.
 
 ## Technical Choices
 
@@ -58,7 +58,7 @@ The explanations and reflective meanings in the app are the author's own interpr
 
 ## The Sutras: Diamond & Heart
 
-Daily Sutra draws randomly from a combined pool of 42 contemplations: the 32 chapters of the **Diamond Sutra** (金剛般若波羅蜜經) and 10 curated sections of the **Heart Sutra** (般若波羅蜜多心經).
+Daily Sutra picks deterministically by date from a combined pool of 42 contemplations: the 32 chapters of the **Diamond Sutra** (金剛般若波羅蜜經) and 10 curated sections of the **Heart Sutra** (般若波羅蜜多心經).
 
 Both sacred texts teach the profound wisdom of prajñāpāramitā—the dissolution of fixed concepts and the insight that all forms are empty of separate, permanent selfhood. By presenting both sutras in a unified daily pool where origin tags recede into the background, the app invites readers to receive each day's verse purely on its own contemplative merits.
 
@@ -88,7 +88,7 @@ Source code: **MIT License** — use freely, modify freely, redistribute freely.
 
 Diamond Sutra and Heart Sutra classical texts: **Public domain** (Kumārajīva's 5th-century Chinese translation, Xuanzang's 7th-century Chinese translation, Gemmell's 1912 English translation).
 
-Explanations, meanings, blessings, and app design: **MIT License** (author's original work).
+Explanations, meanings, blessings, and app design: **MIT License** (AI-assisted drafts, reviewed and edited by the author).
 
 ## Acknowledgments
 
