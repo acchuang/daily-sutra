@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="site_title">Daily Sutra — Contemplative macOS Menu Bar App</title>
+  
+  <meta name="description" content="A contemplative macOS menu bar app delivering one verse from the Diamond Sutra and Heart Sutra each day. Mathematical determinism, classical Chinese, modern reflections, and zero noise.">
+  <meta name="keywords" content="Daily Sutra, Diamond Sutra, Heart Sutra, macOS, menu bar app, mindfulness, Buddhist contemplation, Kumarajiva, Xuanzang, Swift, SwiftUI">
+  <meta name="author" content="acchuang">
+  <meta name="theme-color" content="#f5f4ed">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://daily-sutra.pages.dev/">
+  <meta property="og:title" content="Daily Sutra — Contemplative macOS Menu Bar App">
+  <meta property="og:description" content="One verse each day from the Diamond Sutra and Heart Sutra, floating quietly in your macOS menu bar. Pure Swift, 100% offline.">
+  <meta property="og:image" content="https://daily-sutra.pages.dev/assets/screenshot.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://daily-sutra.pages.dev/">
+  <meta name="twitter:title" content="Daily Sutra — Contemplative macOS Menu Bar App">
+  <meta name="twitter:description" content="One verse each day from the Diamond Sutra and Heart Sutra, floating quietly in your menu bar. Mathematical determinism, classical Chinese, modern reflections.">
+  <meta name="twitter:image" content="https://daily-sutra.pages.dev/assets/screenshot.png">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="assets/AppIcon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
+  <link rel="apple-touch-icon" sizes="128x128" href="assets/app-icon-128.png">
+
+  <!-- Google Fonts: Newsreader for Literary Anthropic-Serif Elegance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#" class="brand">
+        <img src="assets/app-icon-128.png" alt="Daily Sutra Lotus Icon" class="brand-icon">
+        <span class="brand-name">Daily Sutra</span>
+        <span class="brand-badge" data-i18n="brand_sub">macOS</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#simulator" class="nav-link" data-i18n="nav_simulator">Live Simulator</a></li>
+          <li><a href="#philosophy" class="nav-link" data-i18n="nav_philosophy">Philosophy</a></li>
+          <li><a href="#features" class="nav-link" data-i18n="nav_features">Features</a></li>
+          <li><a href="#install" class="nav-link" data-i18n="nav_install">Install & FAQ</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Language Switcher -->
+        <div class="toggle-pill" role="radiogroup" aria-label="Language selection">
+          <button class="toggle-option active" data-lang-choice="en">EN</button>
+          <button class="toggle-option" data-lang-choice="zh">繁中</button>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="theme-toggle-btn" class="theme-btn" aria-label="Toggle Dark/Light Mode" title="Toggle Theme">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+
+        <!-- Primary Download CTA -->
+        <a href="https://github.com/acchuang/daily-sutra/releases/latest/download/DailySutra.zip" class="btn btn-primary btn-sm" id="header-download-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.06 1.72-.93 2.74 1 .08 2.02-.49 2.64-1.24z"/>
+          </svg>
+          <span data-i18n="download_btn">Download v1.1.4</span>
+        </a>
+
+        <!-- GitHub Link -->
+        <a href="https://github.com/acchuang/daily-sutra" target="_blank" rel="noopener" class="theme-btn" title="GitHub Repository">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="eyebrow-badge">
+        <span data-i18n="eyebrow_text">🌸 A Contemplative macOS Companion · Open Source & 100% Offline</span>
+      </div>
+
+      <h1 class="hero-title" data-i18n="hero_title">
+        Quiet wisdom for your morning desk.
+      </h1>
+
+      <p class="hero-subtitle" data-i18n="hero_sub">
+        One verse each day from the Diamond Sutra and Heart Sutra, floating quietly in your menu bar. Mathematical determinism, authentic classical Chinese, modern reflections, and zero digital noise.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="https://github.com/acchuang/daily-sutra/releases/latest/download/DailySutra.zip" class="btn btn-primary btn-lg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.06 1.72-.93 2.74 1 .08 2.02-.49 2.64-1.24z"/>
+          </svg>
+          <span data-i18n="hero_cta_download">Download for macOS (Free)</span>
+        </a>
+
+        <a href="#simulator" class="btn btn-secondary btn-lg" data-i18n="hero_cta_simulator">
+          Try Live Simulator ↓
+        </a>
+      </div>
+
+      <div class="hero-meta">
+        <span class="hero-meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span data-i18n="hero_meta_os">macOS 14 Sonoma or Sequoia</span>
+        </span>
+        <span class="hero-meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span data-i18n="hero_meta_arch">Apple Silicon & Intel Universal</span>
+        </span>
+        <span class="hero-meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span data-i18n="hero_meta_size">1.8 MB · Zero Telemetry</span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Live Simulator Showcase -->
+  <section id="simulator" class="simulator-section">
+    <div class="container">
+      <div class="simulator-wrapper">
+        <div class="simulator-header">
+          <div class="simulator-label" data-i18n="sim_label">Interactive macOS Card Simulator</div>
+          <h2 class="simulator-heading" data-i18n="sim_heading">Experience the morning contemplation ritual right now</h2>
+        </div>
+
+        <!-- Simulated macOS Sonoma Menu Bar -->
+        <div class="mock-menubar">
+          <div class="mock-menu-left">
+            <span class="mock-apple-logo"></span>
+            <span class="mock-menu-item active">Daily Sutra</span>
+            <span class="mock-menu-item">File</span>
+            <span class="mock-menu-item">Edit</span>
+            <span class="mock-menu-item">View</span>
+            <span class="mock-menu-item">Window</span>
+          </div>
+          <div class="mock-menu-right">
+            <!-- Simulated menu bar items -->
+            <span>100%</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+            <!-- The Daily Sutra Status Item -->
+            <div class="mock-sutra-status-item active" title="Daily Sutra Menu Bar Icon">
+              <svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor">
+                <ellipse cx="9" cy="2.5" rx="1.8" ry="2.2"/>
+                <ellipse cx="13" cy="4" rx="1.8" ry="2.2" transform="rotate(60 13 4)"/>
+                <ellipse cx="13" cy="14" rx="1.8" ry="2.2" transform="rotate(120 13 14)"/>
+                <ellipse cx="9" cy="15.5" rx="1.8" ry="2.2"/>
+                <ellipse cx="5" cy="14" rx="1.8" ry="2.2" transform="rotate(-120 5 14)"/>
+                <ellipse cx="5" cy="4" rx="1.8" ry="2.2" transform="rotate(-60 5 4)"/>
+                <circle cx="9" cy="9" r="1.5"/>
+              </svg>
+            </div>
+            <span id="sim-clock-time">08:00 AM</span>
+          </div>
+        </div>
+
+        <!-- Desktop backdrop with floating Sutra Panel Card -->
+        <div class="mock-desktop-canvas">
+          <div id="sutra-panel" class="sutra-panel-card warm-paper" role="region" aria-label="Daily Sutra Floating Card">
+            
+            <!-- Panel Header -->
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <svg class="panel-header-icon" width="16" height="16" viewBox="0 0 18 18" fill="currentColor">
+                  <ellipse cx="9" cy="2.5" rx="1.8" ry="2.2"/>
+                  <ellipse cx="13" cy="4" rx="1.8" ry="2.2" transform="rotate(60 13 4)"/>
+                  <ellipse cx="13" cy="14" rx="1.8" ry="2.2" transform="rotate(120 13 14)"/>
+                  <ellipse cx="9" cy="15.5" rx="1.8" ry="2.2"/>
+                  <ellipse cx="5" cy="14" rx="1.8" ry="2.2" transform="rotate(-120 5 14)"/>
+                  <ellipse cx="5" cy="4" rx="1.8" ry="2.2" transform="rotate(-60 5 4)"/>
+                  <circle cx="9" cy="9" r="1.5"/>
+                </svg>
+                <span id="sim-panel-title" class="panel-title">Friday — Chapter 1</span>
+              </div>
+              <div class="panel-header-actions">
+                <button id="sim-lang-toggle" class="panel-pill-btn" title="Toggle Language (中 / EN)">中</button>
+                <!-- Warm paper toggle -->
+                <button id="sim-warm-paper-toggle" class="panel-icon-btn active" title="Toggle Warm Paper / 宣紙 Mode">
+                  📜
+                </button>
+              </div>
+            </div>
+
+            <!-- Navigation Row -->
+            <div class="panel-nav-row">
+              <div class="panel-nav-left">
+                <button id="sim-prev-day" class="panel-nav-btn" title="Previous Day (←)">←</button>
+                <button id="sim-today-btn" class="panel-nav-btn" title="Return to Today (T)" data-i18n="sim_today_btn">Today</button>
+                <button id="sim-next-day" class="panel-nav-btn" title="Next Day (→)">→</button>
+              </div>
+              <div class="feature-shortcut-pill">
+                <span>Keyboard:</span>
+                <kbd>←</kbd> <kbd>→</kbd> <kbd>T</kbd>
+              </div>
+            </div>
+
+            <!-- Panel Content Body -->
+            <div class="panel-body">
+              <!-- Pull Quote -->
+              <div class="verse-quote-box">
+                <div id="sim-quote-text" class="verse-quote-text">
+                  “Even the Awakened One ate, folded his robe, washed his feet, and sat down to meditate.”
+                </div>
+              </div>
+
+              <!-- Combined Explanation & Meaning -->
+              <div id="sim-explanation-box" class="verse-explanation-box">
+                <strong>Explanation:</strong> The Buddha's awakening showed itself in ordinary daily actions (eating, washing, sitting), not in spectacle. Awakening isn't above the ordinary. The way you eat your breakfast and fold your clothes can be the whole path.
+              </div>
+
+              <!-- Closing Personalized Daily Blessing -->
+              <div id="sim-blessing-box" class="verse-blessing-box">
+                <span id="sim-blessing-emoji" class="verse-blessing-emoji">🍃</span>
+                <span id="sim-blessing-text">May your Friday be ordinary and full, and may eating your breakfast be the whole path today.</span>
+              </div>
+
+              <!-- Collapsible Classical Text Drawer -->
+              <div class="full-text-drawer">
+                <button id="sim-full-text-toggle" class="full-text-toggle">
+                  <span id="sim-full-text-btn-text">View Full Classical Scripture</span>
+                  <span>▾</span>
+                </button>
+                <div id="sim-full-text-content" class="full-text-content"></div>
+              </div>
+            </div>
+
+            <!-- Panel Footer -->
+            <div class="panel-footer">
+              <button id="sim-copy-btn" class="btn btn-secondary btn-sm" title="Copy Formatted Verse (⌘C)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span data-i18n="sim_copy_btn">Copy Verse (⌘C)</span>
+              </button>
+              <span id="sim-copy-feedback" class="copy-feedback-msg">✓ Copied</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Presets quick navigation -->
+        <div class="simulator-presets">
+          <button class="preset-chip active" data-preset="today" data-i18n="preset_today">Today's Verse</button>
+          <button class="preset-chip" data-preset="ch1" data-i18n="preset_ch1">Ch. 1: The Ordinary Meal</button>
+          <button class="preset-chip" data-preset="ch2" data-i18n="preset_ch2">Ch. 2: Bodhisattva Vow</button>
+          <button class="preset-chip" data-preset="ch4" data-i18n="preset_ch4">Ch. 4: Giving Without Attachment</button>
+          <button class="preset-chip" data-preset="ch26" data-i18n="preset_ch26">Ch. 26: The Window of Form</button>
+          <button class="preset-chip" data-preset="heart" data-i18n="preset_heart">Heart Sutra: Form & Emptiness</button>
+        </div>
+
+        <p class="simulator-note" data-i18n="sim_note">
+          Notice: This simulator executes the exact xorshift64 calendar math as the native Mac app. The same calendar date always gives the same verse, anywhere.
+        </p>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Philosophy Section: The Anti-Algorithm Manifesto -->
+  <section id="philosophy" class="philosophy-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag" data-i18n="phil_tag">The Anti-Algorithm Manifesto</div>
+        <h2 class="section-title" data-i18n="phil_title">Designed to ground your attention, not capture it.</h2>
+        <p class="section-subtitle" data-i18n="phil_sub">
+          Most software fights for your dopamine. Daily Sutra is a digital shrine: calm, quiet, mathematically certain, and gone the moment you click away.
+        </p>
+      </div>
+
+      <div class="values-grid">
+        <div class="value-card">
+          <div class="value-icon-box">🔢</div>
+          <h3 class="value-title" data-i18n="phil_card1_title">Deterministic Calendar Math</h3>
+          <p class="value-desc" data-i18n="phil_card1_desc">
+            No AI recommendations, no feeds, and no engagement tracking. A 64-bit xorshift generator seeds strictly from the calendar date. The same calendar date always gives the same verse, anywhere, and tomorrow brings the next with gentle inevitability.
+          </p>
+        </div>
+
+        <div class="value-card">
+          <div class="value-icon-box">📜</div>
+          <h3 class="value-title" data-i18n="phil_card2_title">42 Sacred Contemplations</h3>
+          <p class="value-desc" data-i18n="phil_card2_desc">
+            Curated from the 32 chapters of the Diamond Sutra and 10 contemplative movements of the Heart Sutra. Unified in a single contemplative pool, presented without doctrinal overwhelm.
+          </p>
+        </div>
+
+        <div class="value-card">
+          <div class="value-icon-box">🏮</div>
+          <h3 class="value-title" data-i18n="phil_card3_title">Bilingual Parallel Dignity</h3>
+          <p class="value-desc" data-i18n="phil_card3_desc">
+            Authentic 5th-century Kumārajīva (鳩摩羅什) classical Chinese and Xuanzang (玄奘) Heart Sutra text, accompanied by contemporary English paraphrases, plain-language explanations, and reflective commentary.
+          </p>
+        </div>
+
+        <div class="value-card">
+          <div class="value-icon-box">🍵</div>
+          <h3 class="value-title" data-i18n="phil_card4_title">Warm Paper Reading Ambience</h3>
+          <p class="value-desc" data-i18n="phil_card4_desc">
+            Inspired by traditional Xuan paper (宣紙淡墨). Switch seamlessly between modern glass and soothing warm paper tint to soothe your eyes during early dawn or late evening reflections.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag" data-i18n="feat_tag">Built for macOS Craft</div>
+        <h2 class="section-title" data-i18n="feat_title">Lightweight, respectful, and native.</h2>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-top">
+            <div class="feature-badge-icon">🪟</div>
+            <h3 class="feature-title" data-i18n="feat_card1_title">Dockable or Freely Floating</h3>
+          </div>
+          <p class="feature-desc" data-i18n="feat_card1_desc">
+            Snap directly beneath your menu bar icon with screen-edge safety margins, or drag freely across multiple desktop monitors. Origin coordinates persist seamlessly across restarts.
+          </p>
+          <div class="feature-shortcut-pill">
+            <span>Dock toggle in header</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-top">
+            <div class="feature-badge-icon">📌</div>
+            <h3 class="feature-title" data-i18n="feat_card2_title">Pin Floating Panel</h3>
+          </div>
+          <p class="feature-desc" data-i18n="feat_card2_desc">
+            Toggle the pin button to keep the verse floating beside your journal, code editor, or meditation space across workspace switches.
+          </p>
+          <div class="feature-shortcut-pill">
+            <span>Stays open on focus loss</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-top">
+            <div class="feature-badge-icon">📋</div>
+            <h3 class="feature-title" data-i18n="feat_card3_title">1-Click Formatted Copy</h3>
+          </div>
+          <p class="feature-desc" data-i18n="feat_card3_desc">
+            Press Cmd+C to copy verse, explanation, and personalized daily blessing directly into Obsidian, Apple Notes, Notion, or chat.
+          </p>
+          <div class="feature-shortcut-pill">
+            <kbd>⌘</kbd> + <kbd>C</kbd>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-top">
+            <div class="feature-badge-icon">🔤</div>
+            <h3 class="feature-title" data-i18n="feat_card4_title">Font Scaling (0.85× to 1.8×)</h3>
+          </div>
+          <p class="feature-desc" data-i18n="feat_card4_desc">
+            Adjust typography effortlessly for studio displays or compact laptop screens with persistent font scaling.
+          </p>
+          <div class="feature-shortcut-pill">
+            <span>Persistent in Preferences</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-top">
+            <div class="feature-badge-icon">⚡️</div>
+            <h3 class="feature-title" data-i18n="feat_card5_title">Native SwiftUI + AppKit</h3>
+          </div>
+          <p class="feature-desc" data-i18n="feat_card5_desc">
+            Built purely with Swift 5.9. Zero Electron, zero webviews. Instantaneous launch, a 1.8 MB download, and 0.0% idle CPU.
+          </p>
+          <div class="feature-shortcut-pill">
+            <span>Pure Swift Package Manager</span>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-top">
+            <div class="feature-badge-icon">🛡️</div>
+            <h3 class="feature-title" data-i18n="feat_card6_title">100% Offline & Private</h3>
+          </div>
+          <p class="feature-desc" data-i18n="feat_card6_desc">
+            Zero analytics, zero crash telemetry, zero network requests. Your daily contemplation is entirely private between you and your machine.
+          </p>
+          <div class="feature-shortcut-pill">
+            <span>Zero network sockets</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Showcase Gallery Section -->
+  <section class="showcase-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag" data-i18n="showcase_tag">Gallery Showcase</div>
+        <h2 class="section-title" data-i18n="showcase_title">A serene presence in your daily workflow.</h2>
+        <p class="section-subtitle" data-i18n="showcase_sub">
+          Engineered specifically for macOS Sonoma and macOS Sequoia with refined typography and natural AppKit panel physics.
+        </p>
+      </div>
+
+      <!-- Showcase Tabs -->
+      <div class="showcase-tabs" role="tablist">
+        <button class="showcase-tab-btn active" data-showcase="en" role="tab" aria-selected="true">
+          <span>🌸</span>
+          <span data-i18n="showcase_tab_en">English Verse Card</span>
+        </button>
+        <button class="showcase-tab-btn" data-showcase="zh" role="tab" aria-selected="false">
+          <span>📜</span>
+          <span data-i18n="showcase_tab_zh">Classical Chinese Card</span>
+        </button>
+        <button class="showcase-tab-btn" data-showcase="settings" role="tab" aria-selected="false">
+          <span>⚙️</span>
+          <span data-i18n="showcase_tab_settings">Settings & Preferences</span>
+        </button>
+      </div>
+
+      <div class="showcase-frame">
+        <img id="showcase-main-img" src="assets/screenshot-en.png" alt="Daily Sutra running on macOS menu bar" class="showcase-img" loading="lazy">
+      </div>
+      <p id="showcase-caption" class="showcase-caption" data-i18n="showcase_cap_en">
+        Modern English verse, plain-language explanation, and daily blessing anchored right below the menu bar.
+      </p>
+    </div>
+  </section>
+
+  <!-- Installation & Downloads Section -->
+  <section id="install" class="install-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag" data-i18n="install_tag">Getting Started</div>
+        <h2 class="section-title" data-i18n="install_title">Install Daily Sutra in seconds.</h2>
+      </div>
+
+      <div class="install-grid">
+        <!-- Direct Download Steps Card -->
+        <div class="install-steps-card">
+          <ul class="steps-list">
+            <li class="step-item">
+              <span class="step-num">1</span>
+              <div>
+                <h4 class="step-title" data-i18n="install_step1_title">1. Download Release</h4>
+                <p class="step-desc" data-i18n="install_step1_desc">Download DailySutra.zip from the official GitHub Release (v1.1.4).</p>
+                <div style="margin-top: 12px;">
+                  <a href="https://github.com/acchuang/daily-sutra/releases/latest/download/DailySutra.zip" class="btn btn-primary btn-sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>DailySutra.zip (1.8 MB)</span>
+                  </a>
+                </div>
+              </div>
+            </li>
+
+            <li class="step-item">
+              <span class="step-num">2</span>
+              <div>
+                <h4 class="step-title" data-i18n="install_step2_title">2. Move to Applications</h4>
+                <p class="step-desc" data-i18n="install_step2_desc">Unzip the archive and drag DailySutra.app into your /Applications folder.</p>
+              </div>
+            </li>
+
+            <li class="step-item">
+              <span class="step-num">3</span>
+              <div>
+                <h4 class="step-title" data-i18n="install_step3_title">3. Open & Contemplate</h4>
+                <p class="step-desc" data-i18n="install_step3_desc">Click the lotus icon in your menu bar. The verse panel opens instantly.</p>
+              </div>
+            </li>
+          </ul>
+
+          <!-- Gatekeeper Explainer Callout -->
+          <div class="gatekeeper-callout">
+            <strong data-i18n="gatekeeper_title">macOS Gatekeeper Note</strong>
+            <p data-i18n="gatekeeper_desc" style="margin-top: 6px;">
+              Daily Sutra is an open-source indie app. Because it is distributed outside the Mac App Store without an Apple Developer ID signature, macOS may display an unidentified developer warning on first launch. Simply right-click DailySutra.app and select Open, or run:
+            </p>
+            <div class="code-box">
+              <code>xattr -dr com.apple.quarantine /Applications/DailySutra.app</code>
+              <button class="copy-code-btn" data-code="xattr -dr com.apple.quarantine /Applications/DailySutra.app">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Options (Homebrew & Build from Source) -->
+        <div class="install-sidebar-card">
+          <div class="sidebar-box">
+            <h4 class="sidebar-box-title" data-i18n="sidebar_brew_title">Homebrew Cask</h4>
+            <p class="sidebar-box-desc" data-i18n="sidebar_brew_desc">Install via command line in a single terminal stroke:</p>
+            <div class="code-box">
+              <code>brew install --cask acchuang/tap/daily-sutra</code>
+              <button class="copy-code-btn" data-code="brew install --cask acchuang/tap/daily-sutra">Copy</button>
+            </div>
+          </div>
+
+          <div class="sidebar-box">
+            <h4 class="sidebar-box-title" data-i18n="sidebar_source_title">Build From Source</h4>
+            <p class="sidebar-box-desc" data-i18n="sidebar_source_desc">Pure Swift Package Manager — no Xcode project file required:</p>
+            <div class="code-box" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+              <code>git clone https://github.com/acchuang/daily-sutra.git<br>cd daily-sutra && ./build.sh<br>open build/DailySutra.app</code>
+              <button class="copy-code-btn" style="align-self: flex-end;" data-code="git clone https://github.com/acchuang/daily-sutra.git && cd daily-sutra && ./build.sh && open build/DailySutra.app">Copy Script</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Accordion Section -->
+  <section class="faq-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag" data-i18n="faq_tag">Questions & Answers</div>
+        <h2 class="section-title" data-i18n="faq_title">Frequently Asked Questions</h2>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item open">
+          <button class="faq-question">
+            <span data-i18n="faq_q1">Which sutras are included?</span>
+            <span class="faq-icon">▾</span>
+          </button>
+          <div class="faq-answer" data-i18n="faq_a1">
+            Daily Sutra contains 42 contemplative passages: all 32 chapters of the Diamond Sutra (金剛般若波羅蜜經, Kumārajīva text) and 10 contemplative verses from the Heart Sutra (般若波羅蜜多心經, Xuanzang text). The app unifies them into a single pool without announcing which sutra a verse belongs to, keeping your focus on contemplation rather than cataloging.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span data-i18n="faq_q2">Does Daily Sutra collect any personal data or make network calls?</span>
+            <span class="faq-icon">▾</span>
+          </button>
+          <div class="faq-answer" data-i18n="faq_a2">
+            None whatsoever. Daily Sutra is completely offline. The entire verse database is bundled within the app. There are no tracking libraries, no Google Analytics, no external API calls, and no accounts required.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span data-i18n="faq_q3">How does the daily verse rotate?</span>
+            <span class="faq-icon">▾</span>
+          </button>
+          <div class="faq-answer" data-i18n="faq_a3">
+            Every day at midnight, the app re-rolls using a deterministic 64-bit xorshift algorithm seeded by the calendar date (YYYYMMDD). The same calendar date gives the same verse anywhere in the world (the date is read in your local time zone), without needing an internet connection or server.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span data-i18n="faq_q4">Can I set an optional morning reminder?</span>
+            <span class="faq-icon">▾</span>
+          </button>
+          <div class="faq-answer" data-i18n="faq_a4">
+            Yes! Open Settings (Cmd+,) and enable Daily Notification at your preferred morning hour (e.g., 08:00 AM). Clicking the notification immediately reveals the morning verse.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand">
+            <img src="assets/app-icon-128.png" alt="Daily Sutra Icon" class="brand-icon">
+            <span class="footer-title">Daily Sutra</span>
+          </div>
+          <p class="footer-dedication" data-i18n="footer_dedication">
+            “願以此功德，普及於一切。我等與眾生，皆共成佛道。”<br>
+            May clarity, peace, and quiet presence accompany your day.
+          </p>
+        </div>
+
+        <div class="footer-links-group">
+          <div>
+            <h5 class="footer-col-title" data-i18n="footer_links_product">Product</h5>
+            <ul class="footer-col-list">
+              <li><a href="https://github.com/acchuang/daily-sutra/releases/latest/download/DailySutra.zip" class="footer-col-link">Download for macOS</a></li>
+              <li><a href="https://github.com/acchuang/daily-sutra/releases" class="footer-col-link" target="_blank">Changelog & Releases</a></li>
+              <li><a href="#simulator" class="footer-col-link">Live Web Simulator</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 class="footer-col-title" data-i18n="footer_links_community">Community & Code</h5>
+            <ul class="footer-col-list">
+              <li><a href="https://github.com/acchuang/daily-sutra" class="footer-col-link" target="_blank">GitHub Repository</a></li>
+              <li><a href="https://github.com/acchuang/daily-sutra/issues" class="footer-col-link" target="_blank">Issues & Suggestions</a></li>
+              <li><a href="https://github.com/acchuang/daily-sutra/blob/main/LICENSE" class="footer-col-link" target="_blank">MIT License</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span data-i18n="footer_copy">© 2026 Daily Sutra. Open source under the MIT License. Created by acchuang.</span>
+        <span>Built with Swift 5.9, AppKit & SwiftUI · Hosted on Cloudflare</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="verses-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

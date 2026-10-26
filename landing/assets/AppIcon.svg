@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4a574;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b8860b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="petalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5e6d3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e8d4b8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle (subtle) -->
+  <circle cx="512" cy="512" r="500" fill="#fafaf8" stroke="#e8e8e4" stroke-width="2"/>
+
+  <!-- Outer petal ring (8 petals) -->
+  <g id="outerPetals">
+    <!-- Petal 1 (top) -->
+    <ellipse cx="512" cy="280" rx="65" ry="120" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1.5" opacity="0.95"/>
+    <!-- Petal 2 (top-right) -->
+    <ellipse cx="645" cy="310" rx="65" ry="120" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1.5" opacity="0.95" transform="rotate(45 645 310)"/>
+    <!-- Petal 3 (right) -->
+    <ellipse cx="735" cy="445" rx="65" ry="120" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1.5" opacity="0.95" transform="rotate(90 735 445)"/>
+    <!-- Petal 4 (bottom-right) -->
+    <ellipse cx="695" cy="580" rx="65" ry="120" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1.5" opacity="0.95" transform="rotate(135 695 580)"/>
+    <!-- Petal 5 (bottom) -->
+    <ellipse cx="512" cy="745" rx="65" ry="120" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1.5" opacity="0.95"/>
+    <!-- Petal 6 (bottom-left) -->
+    <ellipse cx="330" cy="580" rx="65" ry="120" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1.5" opacity="0.95" transform="rotate(-135 330 580)"/>
+    <!-- Petal 7 (left) -->
+    <ellipse cx="288" cy="445" rx="65" ry="120" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1.5" opacity="0.95" transform="rotate(-90 288 445)"/>
+    <!-- Petal 8 (top-left) -->
+    <ellipse cx="378" cy="310" rx="65" ry="120" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1.5" opacity="0.95" transform="rotate(-45 378 310)"/>
+  </g>
+
+  <!-- Middle petal ring (8 smaller petals, offset) -->
+  <g id="middlePetals" opacity="0.85">
+    <ellipse cx="512" cy="340" rx="50" ry="95" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1" opacity="0.9"/>
+    <ellipse cx="600" cy="370" rx="50" ry="95" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1" opacity="0.9" transform="rotate(45 600 370)"/>
+    <ellipse cx="655" cy="445" rx="50" ry="95" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1" opacity="0.9" transform="rotate(90 655 445)"/>
+    <ellipse cx="615" cy="530" rx="50" ry="95" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1" opacity="0.9" transform="rotate(135 615 530)"/>
+    <ellipse cx="512" cy="670" rx="50" ry="95" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1" opacity="0.9"/>
+    <ellipse cx="410" cy="530" rx="50" ry="95" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1" opacity="0.9" transform="rotate(-135 410 530)"/>
+    <ellipse cx="368" cy="445" rx="50" ry="95" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1" opacity="0.9" transform="rotate(-90 368 445)"/>
+    <ellipse cx="425" cy="370" rx="50" ry="95" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1" opacity="0.9" transform="rotate(-45 425 370)"/>
+  </g>
+
+  <!-- Inner petal ring (4 petals) -->
+  <g id="innerPetals">
+    <ellipse cx="512" cy="390" rx="40" ry="75" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1"/>
+    <ellipse cx="622" cy="445" rx="40" ry="75" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1" transform="rotate(90 622 445)"/>
+    <ellipse cx="512" cy="600" rx="40" ry="75" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1"/>
+    <ellipse cx="402" cy="445" rx="40" ry="75" fill="url(#petalGradient)" stroke="#d4a574" stroke-width="1" transform="rotate(90 402 445)"/>
+  </g>
+
+  <!-- Center stamen (gold) -->
+  <circle cx="512" cy="445" r="35" fill="url(#goldGradient)" stroke="#b8860b" stroke-width="1.5"/>
+
+  <!-- Center highlight (subtle light) -->
+  <circle cx="512" cy="435" r="15" fill="#fff8dc" opacity="0.6"/>
+
+  <!-- Subtle shadow for depth -->
+  <circle cx="512" cy="512" r="500" fill="none" stroke="#d0ccc8" stroke-width="3" opacity="0.3"/>
+</svg>
