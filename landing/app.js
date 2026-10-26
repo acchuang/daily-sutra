@@ -182,7 +182,7 @@
       hero_sub: 'One verse each day from the Diamond Sutra and Heart Sutra, floating quietly in your menu bar. Mathematical determinism, authentic classical Chinese, modern reflections, and zero digital noise.',
       hero_cta_download: 'Download for macOS (Free)',
       hero_cta_simulator: 'Try Live Simulator ↓',
-      hero_meta_os: 'macOS 14 Sonoma or Sequoia',
+      hero_meta_os: 'macOS 14 Sonoma or later',
       hero_meta_arch: 'Apple Silicon & Intel Universal',
       hero_meta_size: '1.8 MB · Zero Telemetry',
 
@@ -229,7 +229,7 @@
 
       showcase_tag: 'Gallery Showcase',
       showcase_title: 'A serene presence in your daily workflow.',
-      showcase_sub: 'Engineered specifically for macOS Sonoma and macOS Sequoia with refined typography and natural AppKit panel physics.',
+      showcase_sub: 'Built for macOS 14 Sonoma and later, with refined typography and natural AppKit panel physics.',
       showcase_tab_en: 'English Verse Card',
       showcase_tab_zh: 'Classical Chinese Card',
       showcase_tab_settings: 'Settings & Preferences',
@@ -249,7 +249,7 @@
       gatekeeper_desc: 'Daily Sutra is an open-source indie app. Because it is distributed outside the Mac App Store without an Apple Developer ID signature, macOS may display an unidentified developer warning on first launch. Simply right-click DailySutra.app and select Open, or run:',
 
       sidebar_brew_title: 'Homebrew Cask',
-      sidebar_brew_desc: 'Install via command line in a single terminal stroke:',
+      sidebar_brew_desc: 'Install in one command. The cask clears the Gatekeeper quarantine flag for you:',
       sidebar_source_title: 'Build From Source',
       sidebar_source_desc: 'Pure Swift Package Manager — no Xcode project file required:',
 
@@ -263,6 +263,8 @@
       faq_a3: 'Every day at midnight, the app re-rolls using a deterministic 64-bit xorshift algorithm seeded by the calendar date (YYYYMMDD). The same calendar date gives the same verse anywhere in the world (the date is read in your local time zone), without needing an internet connection or server.',
       faq_q4: 'Can I set an optional morning reminder?',
       faq_a4: 'Yes! Open Settings (Cmd+,) and enable Daily Notification at your preferred morning hour (e.g., 08:00 AM). Clicking the notification immediately reveals the morning verse.',
+      faq_q5: 'Was AI used to make this?',
+      faq_a5: 'Yes. The paraphrases, explanations, reflections and blessings were drafted with AI assistance, then reviewed and edited by the author; much of the code was too. They are interpretations, not the canonical sutra text. The bundled Chinese and English sutra texts are public domain.',
 
       footer_dedication: '“願以此功德，普及於一切。我等與眾生，皆共成佛道。”\nMay clarity, peace, and quiet presence accompany your day.',
       footer_links_product: 'Product',
@@ -283,7 +285,7 @@
       hero_sub: '每天早上在選單列打開一則金剛經或心經。不靠演算法，純粹依照日期輪播；收錄鳩摩羅什與玄奘大師經典譯本，並附上白話解讀與每日祝福。',
       hero_cta_download: '免費下載 macOS 版',
       hero_cta_simulator: '直接在線上試用 ↓',
-      hero_meta_os: '支援 macOS 14 Sonoma 與 Sequoia',
+      hero_meta_os: '支援 macOS 14 Sonoma 或更新版本',
       hero_meta_arch: 'Apple Silicon 及 Intel 通用版本',
       hero_meta_size: '檔案僅 1.8 MB · 零追蹤碼',
 
@@ -330,7 +332,7 @@
 
       showcase_tag: '真實介面呈現',
       showcase_title: '安靜融入你的 Mac 桌面。',
-      showcase_sub: '針對 macOS Sonoma 與 Sequoia 設計，深色模式與淺色模式都能自然切換。',
+      showcase_sub: '針對 macOS 14 Sonoma 以上設計，深色模式與淺色模式都能自然切換。',
       showcase_tab_en: '英文晨讀卡片',
       showcase_tab_zh: '中文經文卡片',
       showcase_tab_settings: '偏好設定面板',
@@ -350,7 +352,7 @@
       gatekeeper_desc: 'Daily Sutra 是個人開源軟體，未購買 Apple 商業開發者憑證簽章，首次打開時 macOS 可能會顯示「未識別的開發者」提示。只要在 DailySutra.app 上按右鍵選「打開」確認，或在終端機執行：',
 
       sidebar_brew_title: 'Homebrew 安裝',
-      sidebar_brew_desc: '習慣使用終端機的話，也可以直接透過 Homebrew 安裝：',
+      sidebar_brew_desc: '習慣使用終端機的話，一行指令即可安裝，並自動移除 Gatekeeper 隔離標記：',
       sidebar_source_title: '自行編譯原始碼',
       sidebar_source_desc: '純 Swift Package Manager 專案，不用安裝肥大的 Xcode：',
 
@@ -364,6 +366,8 @@
       faq_a3: '每天午夜零點，App 會拿當天的西元年月日（例如 20261009）當作種子，跑 64 位元 xorshift 計算出當天的經文編號。同一個日期在世界各地看到的都是同一首偈頌（日期以你所在時區為準）。',
       faq_q4: '可以設定晨間提醒通知嗎？',
       faq_a4: '可以。按下 Cmd+, 打開設定面板，開啟「每日定時提醒」並選擇時間（例如早上 08:00）。點一下通知就會直接展開今天的晨讀卡片。',
+      faq_q5: '有用到 AI 製作嗎？',
+      faq_a5: '有。白話譯寫、解說、省思與祝福語，皆由 AI 協助起草，再由作者審閱修改；程式碼也有不少部分如此。這些屬於詮釋，並非經文原典。內附的中英文經文則為公有領域。',
 
       footer_dedication: '「願以此功德，普及於一切。我等與眾生，皆共成佛道。」\n願清涼智慧與平靜，伴隨你的每一天。',
       footer_links_product: '產品',
