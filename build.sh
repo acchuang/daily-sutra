@@ -23,5 +23,10 @@ cp Sources/DailySutra/Resources/MenubarIcon.png "$BUNDLE/Contents/Resources/Menu
 echo ">> signing $BUNDLE (ad-hoc)"
 codesign -s - --force --deep "$BUNDLE" 2>/dev/null || codesign -s - --force "$BUNDLE"
 
+# ditto keeps AppleDouble (._*) files out of the zip; plain zip/unzip would break the seal
+echo ">> packaging build/$APP.zip"
+rm -f "build/$APP.zip"
+ditto -c -k --keepParent --norsrc --noextattr "$BUNDLE" "build/$APP.zip"
+
 echo ">> built $BUNDLE"
 echo "   open with: open $BUNDLE"
