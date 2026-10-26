@@ -2,7 +2,7 @@
 
 ## What Is This?
 
-**Daily Sutra** is a macOS menu bar companion app designed for contemplative practice. It delivers one verse from the Diamond Sutra each day, paired with explanation and reflection.
+**Daily Sutra** is a macOS menu bar companion app designed for contemplative practice. It delivers one verse from the Diamond Sutra and Heart Sutra each day, paired with explanation and reflection.
 
 The app exists to support a morning ritual: open, read, close. Not to be a teaching tool, not to replace study, not to gamify practice. Just one verse, every day, forever.
 
@@ -19,7 +19,7 @@ Why does this matter? In practice, letting the *date* decide removes the temptat
 
 ### Bilingual from the Ground Up
 
-The Diamond Sutra belongs equally to Chinese and English-speaking traditions. Daily Sutra treats both languages as first-class:
+These sutras belong equally to Chinese and English-speaking traditions. Daily Sutra treats both languages as first-class:
 - Full Chinese chapter titles (品名) alongside English
 - Both languages have equally curated explanations and meanings
 - Not English-centric with Chinese as an afterthought
@@ -28,7 +28,7 @@ Switching languages mid-use is instant and persistent. The app re-renders with f
 
 ### Menu Bar Presence (Non-Intrusive)
 
-Daily Sutra is a companion, not a distraction. It appears in the menu bar—a subtle lotus icon—and opens on demand. No notifications pushing you into an app, no design trying to keep you inside longer.
+Daily Sutra is a companion, not a distraction. It appears in the menu bar—a subtle lotus icon—and opens on demand. No notifications unless you opt into a daily reminder, no design trying to keep you inside longer.
 
 This mirrors the philosophy: the verse should be a gentle companion to your morning, not a product fighting for your attention.
 
@@ -109,7 +109,7 @@ Explanations, meanings, blessings, and app design: **MIT License** (AI-assisted 
 
 ---
 
-**Daily Sutra v1.1.0** | Made with 🙏 for contemplation
+**Daily Sutra v1.1.4** | Made with 🙏 for contemplation
 
 If you find this app useful, consider:
 - Sharing it with friends interested in Buddhist practice

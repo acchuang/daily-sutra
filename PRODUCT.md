@@ -12,7 +12,7 @@ Contemplative practitioners and curious readers interested in Buddhist wisdom. D
 
 ## Product Purpose
 
-Daily Sutra delivers one verse from the Diamond Sutra each day, paired with modern explanation and reflective meaning. It makes Buddhist wisdom accessible and memorable through:
+Daily Sutra delivers one verse from the Diamond Sutra and Heart Sutra each day, paired with modern explanation and reflective meaning. It makes Buddhist wisdom accessible and memorable through:
 - **Deterministic daily picks**: Same verse for the same calendar date, anywhere (xorshift64 on date)
 - **Bilingual support**: Classical and modern Chinese alongside English
 - **Contextual depth**: Verse + explanation + reflective meaning + blessing
@@ -42,7 +42,7 @@ Bilingual users switch languages mid-session; app maintains state and re-renders
 ## Capabilities and Constraints
 
 **Implemented**:
-- 32 Diamond Sutra chapters (full texts, translations, commentary, explanations, meanings, blessings)
+- 42 passages: 32 Diamond Sutra chapters and 10 Heart Sutra sections, in one unified pool (full texts, translations, commentary, explanations, meanings, blessings)
 - Deterministic daily verse selection
 - Bilingual display (EN/中) with persistent preference
 - Font scaling (0.85×–1.8×) with UserDefaults persistence
@@ -83,19 +83,19 @@ Bilingual users switch languages mid-session; app maintains state and re-renders
 **Philosophical stance**: Theravada/Mahayana scholarship respected; app is companion to practice, not doctrine.
 
 **Visual identity** (existing):
-- App icon: Currently generic (template)
-- Menu bar icon: Currently generic (template)
+- App icon: lotus mark (`AppIcon.svg`)
+- Menu bar icon: lotus template glyph (`MenubarIcon.svg`)
 - No explicit color palette beyond system (light/dark)
 - Typography: Serif for verses (classical weight), sans for UI
 
 **Existing assets**:
-- 32 Diamond Sutra chapters (verses.json, 217.7KB, curated)
-- AppIcon.icns, MenubarIcon.png (both placeholders)
+- 42 passages (verses.json, curated): 32 Diamond Sutra chapters + 10 Heart Sutra sections
+- AppIcon.icns, MenubarIcon.png (generated from the SVG sources)
 - Swift/SwiftUI codebase (native macOS, no web dependencies)
 
 ## Evidence on Hand
 
-- **Real content**: Full Diamond Sutra, classical Chinese text (Kumārajīva), English translation (Gemmell, public domain), plus app author's explanations and reflective meanings. 32 chapters, complete.
+- **Real content**: Full Diamond Sutra and Heart Sutra selections, classical Chinese text (Kumārajīva, Xuanzang), English translation (Gemmell, public domain), plus app author's AI-assisted, author-reviewed explanations and reflective meanings. 42 passages, complete.
 - **Real users**: Unknown; app is open-source, GitHub repo shows interest but no public metrics.
 - **Design maturity**: UI is functional, no incumbent visual world beyond system defaults.
 - **Code quality**: Well-structured (VerseViewModel, single source of truth for display text, proper state management).
