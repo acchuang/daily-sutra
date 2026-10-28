@@ -115,16 +115,46 @@ public struct VerseText {
     }
 }
 
-/// Deterministic per-date pseudo-random verse pick — a pure function of the
-/// local calendar date, so any date's verse can be recomputed without history.
+/// Deterministic per-date verse pick — a pure function of the local calendar
+/// date and the pool size. Days are grouped into cycles of `count`; each cycle
+/// is a seeded shuffle of the pool, so every verse appears once per cycle.
+/// Stable within an app version: changing the pool size reshuffles every date.
+/// The landing page simulator mirrors this exactly; keep them in step.
 public enum DailyPick {
+    // ponytail: a cycle's last verse can equal the next cycle's first (~1 in 42 boundaries), accepted.
     public static func index(count: Int, for date: Date = Date()) -> Int {
         guard count > 0 else { return 0 }
-        let cal = Calendar(identifier: .gregorian)
-        let c = cal.dateComponents([.year, .month, .day], from: date)
-        let y = c.year ?? 0, m = c.month ?? 0, d = c.day ?? 0
-        var s = UInt64(bitPattern: Int64(y * 10000 + m * 100 + d))
-        s ^= s << 13; s ^= s >> 7; s ^= s << 17   // xorshift64
-        return Int(s % UInt64(count))
+        let c = Calendar(identifier: .gregorian).dateComponents([.year, .month, .day], from: date)
+        let day = dayNumber(year: c.year ?? 1970, month: c.month ?? 1, day: c.day ?? 1)
+        let cycle = floorDiv(day, count)
+        var seed = UInt64(bitPattern: Int64(cycle))
+        var order = Array(0..<count)
+        for i in stride(from: count - 1, to: 0, by: -1) {
+            order.swapAt(i, Int(splitmix64(&seed) % UInt64(i + 1)))
+        }
+        return order[day - cycle * count]
+    }
+
+    /// Days since 1970-01-01 in the proleptic Gregorian calendar (Hinnant's civil-days algorithm).
+    static func dayNumber(year: Int, month: Int, day: Int) -> Int {
+        let y = month <= 2 ? year - 1 : year
+        let era = floorDiv(y, 400)
+        let yoe = y - era * 400
+        let doy = (153 * (month + (month > 2 ? -3 : 9)) + 2) / 5 + day - 1
+        let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy
+        return era * 146_097 + doe - 719_468
+    }
+
+    private static func floorDiv(_ a: Int, _ b: Int) -> Int {
+        let q = a / b
+        return (a % b != 0 && (a < 0) != (b < 0)) ? q - 1 : q
+    }
+
+    private static func splitmix64(_ state: inout UInt64) -> UInt64 {
+        state &+= 0x9E37_79B9_7F4A_7C15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
+        z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
+        return z ^ (z >> 31)
     }
 }

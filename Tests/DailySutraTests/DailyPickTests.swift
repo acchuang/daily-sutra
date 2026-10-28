@@ -1,5 +1,5 @@
 import XCTest
-import SutraKit
+@testable import SutraKit
 
 /// Self-check for the only non-trivial logic in the app: the deterministic
 /// daily verse pick. Run with `swift test`.
@@ -15,8 +15,8 @@ final class DailyPickTests: XCTestCase {
     }
 
     func testNegativeSeedStillInBounds() {
-        // xorshift64 starts from a signed Int64 bit pattern; a date far in the
-        // past produces a negative seed. The result must still be a valid index.
+        // A date far in the past gives a negative day number and cycle; the
+        // result must still be a valid index.
         let d = Date(timeIntervalSince1970: -1_000_000_000)
         let i = DailyPick.index(count: count, for: d)
         XCTAssertTrue((0..<count).contains(i), "negative-seed date out of bounds")
@@ -49,6 +49,34 @@ final class DailyPickTests: XCTestCase {
         // Consecutive identical picks should be rare; a high count would mean
         // the day-to-day seeding barely moves.
         XCTAssertLessThan(sameAsPrevious, 20, "too many adjacent-day repeats")
+    }
+
+    private func date(_ y: Int, _ m: Int, _ d: Int) -> Date {
+        Calendar(identifier: .gregorian).date(from: DateComponents(year: y, month: m, day: d))!
+    }
+
+    /// Pins the pick for pool size 42. A failure means every user's verse for
+    /// that date changed: update these (and the landing simulator) deliberately.
+    /// Values come from an independent Python port of the algorithm.
+    func testGoldenPicks() {
+        let golden: [(Int, Int, Int, Int)] = [
+            (2024, 1, 1, 8), (2026, 1, 1, 5), (2026, 10, 29, 3), (2026, 12, 31, 10), (1938, 4, 2, 30),
+        ]
+        for (y, m, d, want) in golden {
+            XCTAssertEqual(DailyPick.index(count: count, for: date(y, m, d)), want, "\(y)-\(m)-\(d)")
+        }
+    }
+
+    func testEveryCycleShowsEachVerseOnce() {
+        // 1970-01-01 is day 0, a cycle boundary for any pool size.
+        let cal = Calendar(identifier: .gregorian)
+        let start = date(1970, 1, 1)
+        for cycle in 0..<3 {
+            let seen = Set((0..<count).map { offset in
+                DailyPick.index(count: count, for: cal.date(byAdding: .day, value: cycle * count + offset, to: start)!)
+            })
+            XCTAssertEqual(seen.count, count, "cycle \(cycle) must show every verse exactly once")
+        }
     }
 
     func testVerseIDUniquenessAndJSONValidation() throws {
