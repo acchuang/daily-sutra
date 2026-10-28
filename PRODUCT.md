@@ -13,7 +13,7 @@ Contemplative practitioners and curious readers interested in Buddhist wisdom. D
 ## Product Purpose
 
 Daily Sutra delivers one verse from the Diamond Sutra and Heart Sutra each day, paired with modern explanation and reflective meaning. It makes Buddhist wisdom accessible and memorable through:
-- **Deterministic daily picks**: Same verse for the same calendar date, anywhere (xorshift64 on date)
+- **Deterministic daily picks**: Same verse for the same calendar date, anywhere (seeded shuffle by date: every verse once per 42-day cycle)
 - **Bilingual support**: Classical and modern Chinese alongside English
 - **Contextual depth**: Verse + explanation + reflective meaning + blessing
 - **Optional deep learning**: Access full classical translations and extensive commentary
@@ -95,7 +95,7 @@ Bilingual users switch languages mid-session; app maintains state and re-renders
 
 ## Evidence on Hand
 
-- **Real content**: Full Diamond Sutra and Heart Sutra selections, classical Chinese text (Kumārajīva, Xuanzang), English translation (Gemmell, public domain), plus app author's AI-assisted, author-reviewed explanations and reflective meanings. 42 passages, complete.
+- **Real content**: Full Diamond Sutra and Heart Sutra selections, classical Chinese text (Kumārajīva, Xuanzang), English translation (Gemmell 1912 for Diamond, Müller 1894 for Heart; both public domain), plus app author's AI-assisted, author-reviewed explanations and reflective meanings. 42 passages, complete.
 - **Real users**: Unknown; app is open-source, GitHub repo shows interest but no public metrics.
 - **Design maturity**: UI is functional, no incumbent visual world beyond system defaults.
 - **Code quality**: Well-structured (VerseViewModel, single source of truth for display text, proper state management).

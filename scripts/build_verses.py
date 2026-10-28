@@ -133,6 +133,8 @@ def main():
             "meaningZh": prev.get("meaningZh", ""),
             "blessing": prev.get("blessing", ""),
             "blessingZh": prev.get("blessingZh", ""),
+            "sourceEn": prev.get("sourceEn", ""),
+            "sourceZh": prev.get("sourceZh", ""),
         })
     # Heart Sutra is fully authored (Xuanzang canonical text, PD) — keep as-is.
     out.extend(existing_heart)

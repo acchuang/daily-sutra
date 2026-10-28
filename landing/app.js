@@ -1,6 +1,6 @@
 /**
  * Daily Sutra — Landing Page Script
- * Deterministic xorshift64 calendar engine, interactive simulator,
+ * Deterministic cycle-shuffle calendar engine, interactive simulator,
  * full bilingual (EN / 繁中) switching, and warm paper ambience.
  */
 
@@ -21,15 +21,25 @@
 
   const verses = window.SUTRA_VERSES || [];
 
-  // --- Mathematical Determinism (xorshift64 identical to Swift SutraKit) ---
+  // --- Deterministic cycle-shuffle pick (mirrors Swift DailyPick) ---
   function dailyPickIndex(year, month, day, totalCount) {
     if (totalCount <= 0) return 0;
-    const dateVal = BigInt(year * 10000 + month * 100 + day);
-    let s = BigInt.asUintN(64, dateVal);
-    s = BigInt.asUintN(64, s ^ BigInt.asUintN(64, s << 13n));
-    s = BigInt.asUintN(64, s ^ (s >> 7n));
-    s = BigInt.asUintN(64, s ^ BigInt.asUintN(64, s << 17n));
-    return Number(s % BigInt(totalCount));
+    const dayNum = Math.floor(Date.UTC(year, month - 1, day) / 86400000);
+    const cycle = Math.floor(dayNum / totalCount);
+    let seed = BigInt.asUintN(64, BigInt(cycle));
+    const next = () => {
+      seed = BigInt.asUintN(64, seed + 0x9E3779B97F4A7C15n);
+      let z = seed;
+      z = BigInt.asUintN(64, (z ^ (z >> 30n)) * 0xBF58476D1CE4E5B9n);
+      z = BigInt.asUintN(64, (z ^ (z >> 27n)) * 0x94D049BB133111EBn);
+      return z ^ (z >> 31n);
+    };
+    const order = Array.from({ length: totalCount }, (_, i) => i);
+    for (let i = totalCount - 1; i > 0; i--) {
+      const j = Number(next() % BigInt(i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order[dayNum - cycle * totalCount];
   }
 
   function getActiveVerse() {
@@ -126,9 +136,11 @@
 
     // Full Text
     fullTextToggle.textContent = isZh ? '完整經文與對照' : 'Full Classical Text';
-    fullTextContent.textContent = isZh
+    const credit = isZh ? verse.sourceZh : verse.sourceEn;
+    const note = isZh ? '解說與祝福：AI 輔助撰寫，由作者審閱' : 'Commentary: AI-assisted, author-reviewed';
+    fullTextContent.textContent = (isZh
       ? `${verse.titleZh}\n\n${verse.zh}`
-      : `${verse.titleEn}\n\n${verse.en}`;
+      : `${verse.titleEn}\n\n${verse.en}`) + `\n\n${[credit, note].filter(Boolean).join('\n')}`;
 
     if (simFullTextOpen) {
       fullTextContent.classList.add('open');
@@ -191,7 +203,7 @@
       sim_today_btn: 'Today',
       sim_warm_paper_btn: 'Warm Paper',
       sim_copy_btn: 'Copy Verse (⌘C)',
-      sim_note: 'Notice: This simulator executes the exact xorshift64 calendar math as the native Mac app. The same calendar date always gives the same verse, anywhere.',
+      sim_note: 'Notice: This simulator runs the same date-seeded cycle shuffle as the native Mac app. Within an app version, the same calendar date always gives the same verse, and every verse appears once per 42-day cycle.',
 
       preset_today: "Today's Verse",
       preset_ch1: "Ch. 1: The Ordinary Meal",
@@ -204,7 +216,7 @@
       phil_title: 'Designed to ground your attention, not capture it.',
       phil_sub: 'Most software fights for your dopamine. Daily Sutra is a digital shrine: calm, quiet, mathematically certain, and gone the moment you click away.',
       phil_card1_title: 'Deterministic Calendar Math',
-      phil_card1_desc: 'No AI recommendations, no feeds, and no engagement tracking. A 64-bit xorshift generator seeds strictly from the calendar date. The same calendar date always gives the same verse, anywhere, and tomorrow brings the next with gentle inevitability.',
+      phil_card1_desc: 'No AI recommendations, no feeds, and no engagement tracking. A date-seeded shuffle picks the verse for each day, so every verse appears once per 42-day cycle. Within an app version, the same calendar date always gives the same verse, anywhere, and tomorrow brings the next with gentle inevitability.',
       phil_card2_title: '42 Sacred Contemplations',
       phil_card2_desc: 'Curated from the 32 chapters of the Diamond Sutra and 10 contemplative movements of the Heart Sutra. Unified in a single contemplative pool, presented without doctrinal overwhelm.',
       phil_card3_title: 'Bilingual Parallel Dignity',
@@ -260,11 +272,11 @@
       faq_q2: 'Does Daily Sutra collect any personal data or make network calls?',
       faq_a2: 'None whatsoever. Daily Sutra is completely offline. The entire verse database is bundled within the app. There are no tracking libraries, no Google Analytics, no external API calls, and no accounts required.',
       faq_q3: 'How does the daily verse rotate?',
-      faq_a3: 'Every day at midnight, the app re-rolls using a deterministic 64-bit xorshift algorithm seeded by the calendar date (YYYYMMDD). The same calendar date gives the same verse anywhere in the world (the date is read in your local time zone), without needing an internet connection or server.',
+      faq_a3: 'Every day at midnight, the app re-rolls using a deterministic date-seeded shuffle: every verse appears once per 42-day cycle, in an order fixed by the cycle number. Within an app version, the same calendar date gives the same verse anywhere in the world (the date is read in your local time zone), without needing an internet connection or server.',
       faq_q4: 'Can I set an optional morning reminder?',
       faq_a4: 'Yes! Open Settings (Cmd+,) and enable Daily Notification at your preferred morning hour (e.g., 08:00 AM). Clicking the notification immediately reveals the morning verse.',
       faq_q5: 'Was AI used to make this?',
-      faq_a5: 'Yes. The paraphrases, explanations, reflections and blessings were drafted with AI assistance, then reviewed and edited by the author; much of the code was too. They are interpretations, not the canonical sutra text. The bundled Chinese and English sutra texts are public domain.',
+      faq_a5: 'Yes. The paraphrases, explanations, reflections and blessings were drafted with AI assistance, then reviewed and edited by the author; much of the code was too. They are interpretations, not the canonical sutra text. The bundled Chinese and English sutra texts are public domain (English: Gemmell 1912 for the Diamond Sutra, Max Müller 1894 for the Heart Sutra; Müller translated the Sanskrit, so it differs from the Chinese of Xuanzang in places).',
 
       footer_dedication: '“願以此功德，普及於一切。我等與眾生，皆共成佛道。”\nMay clarity, peace, and quiet presence accompany your day.',
       footer_links_product: 'Product',
@@ -294,7 +306,7 @@
       sim_today_btn: '今日',
       sim_warm_paper_btn: '宣紙色溫',
       sim_copy_btn: '複製偈頌 (⌘C)',
-      sim_note: '說明：這個線上模擬器和 Mac 原生 App 使用完全相同的 xorshift64 日期計算方式。同一個日期，不論在世界哪個角落，讀到的經文都一樣。',
+      sim_note: '說明：這個線上模擬器和 Mac 原生 App 使用相同的日期洗牌方式。同一個 App 版本裡，同一個日期不論在哪裡讀到的經文都一樣，而且每 42 天每則經文剛好出現一次。',
 
       preset_today: '今日偈頌',
       preset_ch1: '第 1 章：日常著衣乞食',
@@ -307,7 +319,7 @@
       phil_title: '安靜退居幕後，不爭奪你的注意力。',
       phil_sub: '多數軟體都在搶你的注意力。Daily Sutra 只安靜待在選單列，點開看幾秒、滑鼠移開就收起，不跳通知、不打擾工作。',
       phil_card1_title: '按日期固定輪播，不靠演算法',
-      phil_card1_desc: '沒有推薦演算法，沒有動態牆，也不會追蹤使用習慣。每天依照西元日期跑 64 位元 xorshift 計算，同一個日期不論在哪裡看到的都是同一則偈頌，明天時間一到自動換下一則。',
+      phil_card1_desc: '沒有推薦演算法，沒有動態牆，也不會追蹤使用習慣。每天依照西元日期洗牌挑選，每 42 天每則剛好出現一次，同一個 App 版本裡同一個日期不論在哪裡看到的都是同一則偈頌，明天時間一到自動換下一則。',
       phil_card2_title: '42 則經典般若篇章',
       phil_card2_desc: '精選金剛經 32 分與心經 10 段核心觀照。每天早上花一兩分鐘讀一則，不賣弄玄學，踏實沉澱。',
       phil_card3_title: '原文與白話並列',
@@ -363,11 +375,11 @@
       faq_q2: 'App 會收集個人資料或連上網路嗎？',
       faq_a2: '完全不會。Daily Sutra 是 100% 離線軟體，所有經文與程式都在本機內，不依賴任何外部伺服器，更沒有任何分析追蹤碼。',
       faq_q3: '每天更換經文的原理是什麼？',
-      faq_a3: '每天午夜零點，App 會拿當天的西元年月日（例如 20261009）當作種子，跑 64 位元 xorshift 計算出當天的經文編號。同一個日期在世界各地看到的都是同一首偈頌（日期以你所在時區為準）。',
+      faq_a3: '每天午夜零點，App 會依當天的西元年月日算出今天是第幾天，再用洗牌決定經文：每 42 天每則剛好出現一次。同一個 App 版本裡，同一個日期在世界各地看到的都是同一首偈頌（日期以你所在時區為準）。',
       faq_q4: '可以設定晨間提醒通知嗎？',
       faq_a4: '可以。按下 Cmd+, 打開設定面板，開啟「每日定時提醒」並選擇時間（例如早上 08:00）。點一下通知就會直接展開今天的晨讀卡片。',
       faq_q5: '有用到 AI 製作嗎？',
-      faq_a5: '有。白話譯寫、解說、省思與祝福語，皆由 AI 協助起草，再由作者審閱修改；程式碼也有不少部分如此。這些屬於詮釋，並非經文原典。內附的中英文經文則為公有領域。',
+      faq_a5: '有。白話譯寫、解說、省思與祝福語，皆由 AI 協助起草，再由作者審閱修改；程式碼也有不少部分如此。這些屬於詮釋，並非經文原典。內附的中英文經文則為公有領域（英文：金剛經採 Gemmell 1912，心經採 Max Müller 1894；Müller 譯自梵文，與玄奘漢譯略有出入）。',
 
       footer_dedication: '「願以此功德，普及於一切。我等與眾生，皆共成佛道。」\n願清涼智慧與平靜，伴隨你的每一天。',
       footer_links_product: '產品',

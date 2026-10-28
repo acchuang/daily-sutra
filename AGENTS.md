@@ -39,12 +39,17 @@ belongs to is not shown.
   Wikisource (`{{PD-old}}`); cross-reference CBETA T08n0235.
 - `en` (diamond): Gemmell 1912 translation (Project Gutenberg #64623,
   pre-1928, PD). Inline footnote markers `[N]` stripped; footnote blocks
-  dropped. Not shown in the panel; kept as bundled reference.
+  dropped. Shown in the Full Text view.
 - Heart Sutra: canonical 玄奘 (Xuanzang) text, public domain (7th c.,
   CBETA T08n0251). The Heart Sutra is a single continuous text (~260 chars);
   this app segments it into 10 contemplatable lines. `zh` holds the full
-  sutra; `verseZh` is the line for that entry. `en`/`verseEn` are the app
-  author's modern paraphrase (no PD English translation is bundled for Heart).
+  sutra; `verseZh` is the line for that entry. `en` is Max Müller's 1894
+  translation (SBE vol. 49, PD, spelling modernised), sliced to match the 10
+  lines. It translates the Sanskrit, so it differs from Xuanzang in places.
+  `verseEn` is the app author's modern paraphrase.
+- `sourceEn` / `sourceZh`: per-verse credit line for `zh` and `en`, shown in the
+  Full Text view. `scripts/build_verses.py` carries it over for Diamond.
+  Commentary label ("AI-assisted, author-reviewed") lives in `VerseText`.
 - `verseEn` / `explEn` / `meaning` (both sutras): modern English verse
   (app author's paraphrase), plain-language explanation, and reflective
   meaning. Editorial, NOT the canonical PD text.
@@ -70,9 +75,11 @@ stays open (a 60s day-rollover timer resets to today's verse).
 Default panel 400×560, min 320×400, user-resizable.
 
 **Daily pick is a deterministic pseudo-random selection seeded by the date**
-(xorshift64 over `YYYYMMDD`) across the **entire pool** (Diamond + Heart, 42
-entries), so the same verse shows all day and a new random one appears
-tomorrow. Prev/Next browse sequentially through the pool; Today resets to
+(`DailyPick`: cycle-shuffle over the local day number) across the **entire
+pool** (Diamond + Heart, 42 entries). Each verse appears exactly once per
+42-day cycle. The pick is stable per app version; changing the pool size
+reshuffles every date, and `DailyPickTests` golden dates must be updated in
+the same commit. The landing-page simulator mirrors this algorithm in JS. Prev/Next browse sequentially through the pool; Today resets to
 today's pick.
 
 ## Regenerating the text

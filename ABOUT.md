@@ -4,15 +4,16 @@
 
 **Daily Sutra** is a macOS menu bar companion app designed for contemplative practice. It delivers one verse from the Diamond Sutra and Heart Sutra each day, paired with explanation and reflection.
 
-The app exists to support a morning ritual: open, read, close. Not to be a teaching tool, not to replace study, not to gamify practice. Just one verse, every day, forever.
+The app exists to support a morning ritual: open, read, close. Not to be a teaching tool, not to replace study, not to gamify practice. Just one verse, every day.
 
 ## Design Philosophy
 
 ### Deterministic Picks (No Algorithms)
 
-Each verse is selected by date using a simple mathematical function (xorshift64). This means:
+Each verse is selected by date using a simple seeded shuffle. This means:
 - **Same verse every day** — you and a friend in Tokyo see the same verse on the same calendar date.
-- **Reproducible forever** — if the app is gone in 2050, you can regenerate the same sequence.
+- **Every verse in turn** — the 42 verses are shuffled once per 42-day cycle, so each appears exactly once before any repeats.
+- **Reproducible per version** — a given app version always maps the same date to the same verse. Adding verses in a later version reshuffles the order.
 - **No recommendations** — the app doesn't learn your preferences or try to optimize what you see.
 
 Why does this matter? In practice, letting the *date* decide removes the temptation to refresh until you get "the right verse." You meet each day's verse as given. This mirrors a contemplative principle: acceptance over preference.
@@ -38,7 +39,7 @@ The core view is fast: verse + explanation + blessing. Three minutes, tops.
 
 But if you want deeper learning, tap "Full Text" to access:
 - Classical Chinese translation (Kumārajīva, 5th century)
-- Full English translation (Gemmell, 1912)
+- Full English translation (Gemmell, 1912 for Diamond; Müller, 1894 for Heart)
 - Extensive scholarly commentary and annotations
 
 This two-tier approach respects different use cases: the hurried morning reader and the scholar with an afternoon to spend.
@@ -53,7 +54,7 @@ The explanations, reflective meanings and blessings were drafted with AI assista
 
 - **Native macOS only** — no web app, no cross-platform compromise. macOS has excellent platforms for this kind of work (AppKit, SwiftUI, UserNotifications).
 - **Local only** — no cloud sync, no accounts, no telemetry. All state lives in UserDefaults on your machine.
-- **Deterministic data** — the date is the only input needed to regenerate any verse, forever. No database, no API calls, no central server required.
+- **Deterministic data** — the date (plus the app version's verse list) is the only input needed to regenerate any verse. No database, no API calls, no central server required.
 - **Open source** — everything is readable, forkable, and modifiable. You can audit the code, modify it, redistribute it.
 
 ## The Sutras: Diamond & Heart
@@ -86,7 +87,7 @@ Your favorites, font size, language preference, reading ambience, and notificati
 
 Source code: **MIT License** — use freely, modify freely, redistribute freely.
 
-Diamond Sutra and Heart Sutra classical texts: **Public domain** (Kumārajīva's 5th-century Chinese translation, Xuanzang's 7th-century Chinese translation, Gemmell's 1912 English translation).
+Diamond Sutra and Heart Sutra classical texts: **Public domain** (Kumārajīva's 5th-century Chinese translation, Xuanzang's 7th-century Chinese translation, Gemmell's 1912 and Müller's 1894 English translations). Müller translated the Sanskrit Heart Sutra, so his English differs from Xuanzang's Chinese in places.
 
 Explanations, meanings, blessings, and app design: **MIT License** (AI-assisted drafts, reviewed and edited by the author).
 
@@ -95,7 +96,8 @@ Explanations, meanings, blessings, and app design: **MIT License** (AI-assisted 
 ### Scholarship
 - Kumārajīva (鳩摩羅什) for the classical Chinese translation of the Diamond Sutra (5th century)
 - Xuanzang (玄奘) for the classical Chinese translation of the Heart Sutra (7th century)
-- J. Thaddeus Gemmell for the English translation (1912)
+- J. Thaddeus Gemmell for the Diamond Sutra English translation (1912)
+- Max Müller for the Heart Sutra English translation (1894, Sacred Books of the East, vol. 49)
 - Modern Buddhist scholars whose work informs the app author's interpretations
 
 ### Community

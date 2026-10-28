@@ -23,7 +23,7 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web depen
 - 📜 **Distilled Reading Card** — serene reading view focused exclusively on scripture, reflection, and blessing
 - 🌐 **Bilingual**: English ↔ 繁體中文, instant 1-tap language switch in the header
 - 🎨 **Reading Ambience (Warm Paper Tint)** — optional soft parchment / Xuan paper (宣紙) background tint for quiet morning contemplation
-- 📅 **Deterministic daily pick** (xorshift64 algorithm) — the same verse for the same calendar date, anywhere, reproducible forever
+- 📅 **Deterministic daily pick** — the same verse for the same calendar date, anywhere, for a given app version; every verse appears exactly once per 42-day cycle
 - 🪟 **Floating & dockable panel** (400×560, resizable 320×400 min) — choose between anchored under the menu bar or freely draggable anywhere on screen, dismissible on focus loss
 
 ### Navigation & Exploration
@@ -140,6 +140,7 @@ Sources/
 - **Diamond Sutra, Chinese** — Kumārajīva (鳩摩羅什) translation, public domain (5th c.)
 - **Diamond Sutra, English** — Gemmell 1912 translation (Project Gutenberg #64623, public domain)
 - **Heart Sutra, Chinese** — Xuanzang (玄奘) translation, public domain (7th c.)
+- **Heart Sutra, English** — Max Müller 1894 (Sacred Books of the East, vol. 49, public domain), spelling modernised. Müller translated the Sanskrit, so it differs from Xuanzang's Chinese in places
 - **42 contemplations** — fully curated with classical texts, translations, and scholarly annotations
 
 ### Original Work
