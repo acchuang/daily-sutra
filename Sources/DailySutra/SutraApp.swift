@@ -915,6 +915,14 @@ struct SutraView: View {
                     .textSelection(.enabled)
                     .foregroundStyle(.primary)
 
+                let text = VerseText(zh: viewModel.lang == .zh)
+                VStack(alignment: .leading, spacing: 2) {
+                    if !text.source(v).isEmpty { Text(text.source(v)) }
+                    Text(text.commentaryNote)
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
                 Divider().padding(.vertical, 4)
 
                 Button(action: {

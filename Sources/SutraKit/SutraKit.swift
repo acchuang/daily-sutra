@@ -89,6 +89,15 @@ public struct VerseText {
         return zh ? "解釋：\(body)" : "Explanation: \(body)"
     }
 
+    /// Credit for the classical text + translation shown in Full Text.
+    public func source(_ v: Verse) -> String {
+        (zh ? v.sourceZh : v.sourceEn) ?? ""
+    }
+
+    public var commentaryNote: String {
+        zh ? "解說與祝福：AI 輔助撰寫，由作者審閱" : "Commentary: AI-assisted, author-reviewed"
+    }
+
     public func weekday(_ date: Date) -> String {
         let f = DateFormatter()
         f.locale = Locale(identifier: zh ? "zh_TW" : "en_US")

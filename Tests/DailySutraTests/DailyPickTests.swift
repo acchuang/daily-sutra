@@ -150,6 +150,15 @@ final class VerseTextTests: XCTestCase {
         XCTAssertEqual(VerseText(zh: true).title(v, on: monday), "星期一 — 第3章")
     }
 
+    func testSourceLineFollowsLanguageAndDefaultsEmpty() {
+        XCTAssertEqual(VerseText(zh: false).source(v), "")
+        let credited = Verse(index: 1, sutra: "heart", titleZh: "", titleEn: "", zh: "", en: "",
+                             verseEn: "", verseZh: "", explEn: "", explZh: "", meaning: "", meaningZh: "",
+                             sourceEn: "Xuanzang · Müller", sourceZh: "玄奘 · Müller")
+        XCTAssertEqual(VerseText(zh: false).source(credited), "Xuanzang · Müller")
+        XCTAssertEqual(VerseText(zh: true).source(credited), "玄奘 · Müller")
+    }
+
     func testClipboardSkipsEmptySections() {
         let bare = Verse(index: 1, sutra: "heart", titleZh: "", titleEn: "", zh: "", en: "",
                          verseEn: "x", verseZh: "x", explEn: "", explZh: "", meaning: "", meaningZh: "")
