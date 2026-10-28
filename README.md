@@ -141,7 +141,7 @@ Sources/
 - **Diamond Sutra, English** — Gemmell 1912 translation (Project Gutenberg #64623, public domain)
 - **Heart Sutra, Chinese** — Xuanzang (玄奘) translation, public domain (7th c.)
 - **Heart Sutra, English** — Max Müller 1894 (Sacred Books of the East, vol. 49, public domain), spelling modernised. Müller translated the Sanskrit, so it differs from Xuanzang's Chinese in places
-- **42 contemplations** — fully curated with classical texts, translations, and scholarly annotations
+- **42 verses** — classical texts and translations as credited above, plus the original work below
 
 ### Original Work
 

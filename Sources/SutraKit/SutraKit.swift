@@ -130,22 +130,32 @@ public struct VerseText {
 
 /// Deterministic per-date verse pick — a pure function of the local calendar
 /// date and the pool size. Days are grouped into cycles of `count`; each cycle
-/// is a seeded shuffle of the pool, so every verse appears once per cycle.
+/// is a seeded shuffle of the pool, so every verse appears once per cycle and
+/// none repeats on consecutive days.
 /// Stable within an app version: changing the pool size reshuffles every date.
 /// The landing page simulator mirrors this exactly; keep them in step.
 public enum DailyPick {
-    // ponytail: a cycle's last verse can equal the next cycle's first (~1 in 42 boundaries), accepted.
     public static func index(count: Int, for date: Date = Date()) -> Int {
         guard count > 0 else { return 0 }
         let c = Calendar(identifier: .gregorian).dateComponents([.year, .month, .day], from: date)
         let day = dayNumber(year: c.year ?? 1970, month: c.month ?? 1, day: c.day ?? 1)
         let cycle = floorDiv(day, count)
+        var order = shuffled(cycle: cycle, count: count)
+        // Never repeat a verse across the cycle seam. The swap only touches
+        // positions 0 and 1, so the previous cycle's last slot is never moved.
+        if count > 2, order[0] == shuffled(cycle: cycle - 1, count: count)[count - 1] {
+            order.swapAt(0, 1)
+        }
+        return order[day - cycle * count]
+    }
+
+    private static func shuffled(cycle: Int, count: Int) -> [Int] {
         var seed = UInt64(bitPattern: Int64(cycle))
         var order = Array(0..<count)
         for i in stride(from: count - 1, to: 0, by: -1) {
             order.swapAt(i, Int(splitmix64(&seed) % UInt64(i + 1)))
         }
-        return order[day - cycle * count]
+        return order
     }
 
     /// Days since 1970-01-01 in the proleptic Gregorian calendar (Hinnant's civil-days algorithm).

@@ -40,7 +40,7 @@ The core view is fast: verse + explanation + blessing. Three minutes, tops.
 But if you want deeper learning, tap "Full Text" to access:
 - Classical Chinese translation (Kumārajīva, 5th century)
 - Full English translation (Gemmell, 1912 for Diamond; Müller, 1894 for Heart)
-- Extensive scholarly commentary and annotations
+- Source credits for the Chinese and English texts, and a note on which commentary is AI-assisted
 
 This two-tier approach respects different use cases: the hurried morning reader and the scholar with an afternoon to spend.
 

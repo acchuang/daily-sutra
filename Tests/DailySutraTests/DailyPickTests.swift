@@ -61,6 +61,7 @@ final class DailyPickTests: XCTestCase {
     func testGoldenPicks() {
         let golden: [(Int, Int, Int, Int)] = [
             (2024, 1, 1, 8), (2026, 1, 1, 5), (2026, 10, 29, 3), (2026, 12, 31, 10), (1938, 4, 2, 30),
+            (1970, 2, 11, 37), (1970, 2, 12, 17),   // cycle seam: raw shuffle would repeat 37
         ]
         for (y, m, d, want) in golden {
             XCTAssertEqual(DailyPick.index(count: count, for: date(y, m, d)), want, "\(y)-\(m)-\(d)")
@@ -76,6 +77,17 @@ final class DailyPickTests: XCTestCase {
                 DailyPick.index(count: count, for: cal.date(byAdding: .day, value: cycle * count + offset, to: start)!)
             })
             XCTAssertEqual(seen.count, count, "cycle \(cycle) must show every verse exactly once")
+        }
+    }
+
+    func testNoVerseRepeatsOnConsecutiveDays() {
+        let cal = Calendar(identifier: .gregorian)
+        var prev = DailyPick.index(count: count, for: date(2000, 1, 1))
+        for offset in 1..<(count * 300) {
+            let d = cal.date(byAdding: .day, value: offset, to: date(2000, 1, 1))!
+            let cur = DailyPick.index(count: count, for: d)
+            XCTAssertNotEqual(cur, prev, "repeat on day +\(offset)")
+            prev = cur
         }
     }
 

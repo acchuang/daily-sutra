@@ -22,10 +22,7 @@
   const verses = window.SUTRA_VERSES || [];
 
   // --- Deterministic cycle-shuffle pick (mirrors Swift DailyPick) ---
-  function dailyPickIndex(year, month, day, totalCount) {
-    if (totalCount <= 0) return 0;
-    const dayNum = Math.floor(Date.UTC(year, month - 1, day) / 86400000);
-    const cycle = Math.floor(dayNum / totalCount);
+  function cycleOrder(cycle, count) {
     let seed = BigInt.asUintN(64, BigInt(cycle));
     const next = () => {
       seed = BigInt.asUintN(64, seed + 0x9E3779B97F4A7C15n);
@@ -34,10 +31,21 @@
       z = BigInt.asUintN(64, (z ^ (z >> 27n)) * 0x94D049BB133111EBn);
       return z ^ (z >> 31n);
     };
-    const order = Array.from({ length: totalCount }, (_, i) => i);
-    for (let i = totalCount - 1; i > 0; i--) {
+    const order = Array.from({ length: count }, (_, i) => i);
+    for (let i = count - 1; i > 0; i--) {
       const j = Number(next() % BigInt(i + 1));
       [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+  }
+
+  function dailyPickIndex(year, month, day, totalCount) {
+    if (totalCount <= 0) return 0;
+    const dayNum = Math.floor(Date.UTC(year, month - 1, day) / 86400000);
+    const cycle = Math.floor(dayNum / totalCount);
+    const order = cycleOrder(cycle, totalCount);
+    if (totalCount > 2 && order[0] === cycleOrder(cycle - 1, totalCount)[totalCount - 1]) {
+      [order[0], order[1]] = [order[1], order[0]];
     }
     return order[dayNum - cycle * totalCount];
   }
