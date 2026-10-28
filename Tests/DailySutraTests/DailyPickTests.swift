@@ -103,6 +103,9 @@ final class DailyPickTests: XCTestCase {
             XCTAssertFalse(verse.verseEn.isEmpty, "English verse line cannot be empty: \(verse.id)")
             XCTAssertFalse(verse.explZh.isEmpty, "Chinese explanation cannot be empty: \(verse.id)")
             XCTAssertFalse(verse.explEn.isEmpty, "English explanation cannot be empty: \(verse.id)")
+            XCTAssertFalse(verse.sourceEn?.isEmpty ?? true, "English source credit missing: \(verse.id)")
+            XCTAssertFalse(verse.sourceZh?.isEmpty ?? true, "Chinese source credit missing: \(verse.id)")
+            XCTAssertNotEqual(verse.en, verse.verseEn, "Full-text English must be the sourced translation, not the paraphrase: \(verse.id)")
         }
     }
 }

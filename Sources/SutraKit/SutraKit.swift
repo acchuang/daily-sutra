@@ -10,7 +10,7 @@ public struct Verse: Codable, Identifiable, Equatable, Hashable {
     public let titleZh: String     // 品名 e.g. 法會因由分第一
     public let titleEn: String     // section label
     public let zh: String          // classical Chinese full passage (Kumārajīva / Xuanzang, PD)
-    public let en: String          // PD English (Gemmell for diamond) or paraphrase (heart)
+    public let en: String          // PD English (Gemmell for diamond, Müller for heart)
     public let verseEn: String     // modern English verse (app author's paraphrase)
     public let verseZh: String     // authentic classical Chinese line from the section
     public let explEn: String      // plain-language explanation (English)
@@ -19,14 +19,18 @@ public struct Verse: Codable, Identifiable, Equatable, Hashable {
     public let meaningZh: String   // reflective meaning (modern traditional Chinese)
     public let blessing: String        // closing blessing (English), with {weekday} placeholder
     public let blessingZh: String      // closing blessing (modern traditional Chinese), with {weekday} placeholder
+    public let sourceEn: String?       // classical text + translation credit, shown in Full Text
+    public let sourceZh: String?
 
     public init(index: Int, sutra: String, titleZh: String, titleEn: String, zh: String, en: String,
                 verseEn: String, verseZh: String, explEn: String, explZh: String, meaning: String, meaningZh: String,
-                blessing: String = "", blessingZh: String = "") {
+                blessing: String = "", blessingZh: String = "",
+                sourceEn: String? = nil, sourceZh: String? = nil) {
         self.index = index; self.sutra = sutra; self.titleZh = titleZh; self.titleEn = titleEn
         self.zh = zh; self.en = en; self.verseEn = verseEn; self.verseZh = verseZh
         self.explEn = explEn; self.explZh = explZh; self.meaning = meaning; self.meaningZh = meaningZh
         self.blessing = blessing; self.blessingZh = blessingZh
+        self.sourceEn = sourceEn; self.sourceZh = sourceZh
     }
 }
 
