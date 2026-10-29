@@ -95,7 +95,7 @@ public struct VerseText {
     }
 
     public var commentaryNote: String {
-        zh ? "解說與祝福：AI 輔助撰寫，由作者審閱" : "Commentary: AI-assisted, author-reviewed"
+        zh ? "解說與祝福：AI 輔助撰寫，由作者審閱" : "Paraphrase, commentary and blessings: AI-assisted, author-reviewed"
     }
 
     public func weekday(_ date: Date) -> String {

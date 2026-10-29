@@ -145,7 +145,7 @@
     // Full Text
     fullTextToggle.textContent = isZh ? '完整經文與對照' : 'Full Classical Text';
     const credit = isZh ? verse.sourceZh : verse.sourceEn;
-    const note = isZh ? '解說與祝福：AI 輔助撰寫，由作者審閱' : 'Commentary: AI-assisted, author-reviewed';
+    const note = isZh ? '解說與祝福：AI 輔助撰寫，由作者審閱' : 'Paraphrase, commentary and blessings: AI-assisted, author-reviewed';
     fullTextContent.textContent = (isZh
       ? `${verse.titleZh}\n\n${verse.zh}`
       : `${verse.titleEn}\n\n${verse.en}`) + `\n\n${[credit, note].filter(Boolean).join('\n')}`;
