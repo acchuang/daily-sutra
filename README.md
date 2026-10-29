@@ -42,7 +42,7 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web depen
 - 🔔 **Daily notifications** — opt-in reminder at user-selected time (race-free scheduling)
 - 📍 **Pin panel** — keep visible across app switches (toggleable)
 - 🚀 **Launch at Login** — auto-start via `SMAppService`
-- 🌓 **Light/dark mode** — auto-adapts to system appearance
+- 🌓 **Light/dark mode** — System, Light or Dark — your choice in settings
 
 ### Accessibility & Controls
 | Shortcut / Control | Action |
@@ -172,4 +172,4 @@ For major changes, open an issue first.
 
 ---
 
-**Daily Sutra v1.2.1** | Made with 🙏 for contemplation and practice
+**Daily Sutra v1.3.0** | Made with 🙏 for contemplation and practice

@@ -69,7 +69,7 @@ Both sacred texts teach the profound wisdom of prajñāpāramitā—the dissolut
 - **Flexible Window Placement**: Choose between anchoring cleanly beneath the menu bar status icon or freely dragging across multiple displays, with position persistence and quick menu bar snapping.
 - **VoiceOver & Screen Readers**: fully discrete button focus, localized labels, and clean semantic structure.
 - **Reading Ambience**: optional warm paper / parchment tint (宣紙色調) for a soft, meditative morning atmosphere.
-- **Light and dark mode**: automatically adapts to macOS appearance with organic cream and charcoal-amber warmth.
+- **Light and dark mode**: follows macOS appearance by default, or choose Light or Dark in settings, with organic cream and charcoal-amber warmth.
 - **Font scaling**: 0.85× to 1.8× with live percentage feedback.
 - **Bilingual**: English and Traditional Chinese (繁體中文) with 1-tap switching and full parity.
 
@@ -111,7 +111,7 @@ Explanations, meanings, blessings, and app design: **MIT License** (AI-assisted 
 
 ---
 
-**Daily Sutra v1.2.1** | Made with 🙏 for contemplation
+**Daily Sutra v1.3.0** | Made with 🙏 for contemplation
 
 If you find this app useful, consider:
 - Sharing it with friends interested in Buddhist practice
