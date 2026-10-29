@@ -34,6 +34,29 @@ public struct Verse: Codable, Identifiable, Equatable, Hashable {
     }
 }
 
+/// Which sutra(s) the daily pick draws from. The pick is a pure function of
+/// the date and the pool size, so a choice simply hands DailyPick a smaller pool.
+public enum SutraChoice: String, CaseIterable, Identifiable {
+    case both, diamond, heart
+
+    public var id: String { rawValue }
+
+    /// The pool for this choice; never empty when `verses` isn't, so a stale
+    /// or partial bundle can't leave the panel blank.
+    public func filter(_ verses: [Verse]) -> [Verse] {
+        let pool = self == .both ? verses : verses.filter { $0.sutra == rawValue }
+        return pool.isEmpty ? verses : pool
+    }
+
+    public func label(zh: Bool) -> String {
+        switch self {
+        case .both: return zh ? "兩部皆選" : "Both"
+        case .diamond: return zh ? "金剛經" : "Diamond"
+        case .heart: return zh ? "心經" : "Heart"
+        }
+    }
+}
+
 public enum VerseStore {
     public static func load(from bundle: Bundle = .main) -> [Verse] {
         guard let url = bundle.url(forResource: "verses", withExtension: "json") else {

@@ -327,3 +327,48 @@ final class WindowPlacementPersistenceTests: XCTestCase {
         XCTAssertLessThanOrEqual(targetX + panelSize.width, visible.maxX)
     }
 }
+
+/// The Sutra setting hands DailyPick a smaller pool; nothing else changes.
+final class SutraChoiceTests: XCTestCase {
+    private func bundled() -> [Verse] {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        return VerseStore.load(from: root.appendingPathComponent("Sources/DailySutra/Resources/verses.json"))
+    }
+
+    func testFilterSizesAndMembership() {
+        let all = bundled()
+        XCTAssertEqual(SutraChoice.both.filter(all).count, 42)
+        XCTAssertEqual(SutraChoice.diamond.filter(all).count, 32)
+        XCTAssertEqual(SutraChoice.heart.filter(all).count, 10)
+        XCTAssertTrue(SutraChoice.diamond.filter(all).allSatisfy { $0.sutra == "diamond" })
+        XCTAssertTrue(SutraChoice.heart.filter(all).allSatisfy { $0.sutra == "heart" })
+    }
+
+    func testBothKeepsTheOriginalPoolOrder() {
+        let all = bundled()
+        XCTAssertEqual(SutraChoice.both.filter(all).map(\.id), all.map(\.id))
+    }
+
+    func testMissingSutraFallsBackToFullPool() {
+        let diamondOnly = bundled().filter { $0.sutra == "diamond" }
+        XCTAssertEqual(SutraChoice.heart.filter(diamondOnly).count, diamondOnly.count)
+        XCTAssertTrue(SutraChoice.heart.filter([]).isEmpty)
+    }
+
+    func testEachPoolCoversItselfOncePerCycle() {
+        let all = bundled()
+        let cal = Calendar(identifier: .gregorian)
+        let start = cal.date(from: DateComponents(year: 1970, month: 1, day: 1))!
+        for choice in SutraChoice.allCases {
+            let n = choice.filter(all).count
+            let seen = Set((0..<n).map { cal.date(byAdding: .day, value: $0, to: start)! }
+                .map { DailyPick.index(count: n, for: $0) })
+            XCTAssertEqual(seen.count, n, "\(choice) must show every verse once per cycle")
+        }
+    }
+
+    func testLabelsFollowLanguage() {
+        XCTAssertEqual(SutraChoice.heart.label(zh: false), "Heart")
+        XCTAssertEqual(SutraChoice.heart.label(zh: true), "心經")
+    }
+}

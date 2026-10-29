@@ -355,7 +355,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
 
 @MainActor
 final class VerseViewModel: ObservableObject {
-    @Published var verses: [Verse]
+    private let allVerses: [Verse]
+    @Published var sutraChoice: SutraChoice
+    /// The pool the daily pick draws from.
+    var verses: [Verse] { sutraChoice.filter(allVerses) }
     @Published var showing: Showing = .day(Date())
     @Published var lang: AppLang
     @Published var fontScale: Double
@@ -376,13 +379,14 @@ final class VerseViewModel: ObservableObject {
 
     private static let kLang = "AppLang", kScale = "FontScale", kFavs = "Favorites"
     private static let kNotify = "NotifyEnabled", kNotifyAt = "NotifyMinutes"
-    private static let kOnboarded = "OnboardingCompleted", kWarmPaper = "WarmPaperTheme", kAttach = "AttachToMenubar"
+    private static let kOnboarded = "OnboardingCompleted", kWarmPaper = "WarmPaperTheme", kAttach = "AttachToMenubar", kSutra = "SutraChoice"
     private static let defaultNotifyMinutes = 8 * 60
     private var rolloverTimer: Timer?
     private var currentDay: Int = 0
 
     init(verses: [Verse]) {
-        self.verses = verses
+        self.allVerses = verses
+        self.sutraChoice = SutraChoice(rawValue: UserDefaults.standard.string(forKey: Self.kSutra) ?? "") ?? .both
         let saved = UserDefaults.standard.string(forKey: Self.kLang) ?? "en"
         self.lang = AppLang(rawValue: saved) ?? .en
         let raw = UserDefaults.standard.double(forKey: Self.kScale)
@@ -484,6 +488,14 @@ final class VerseViewModel: ObservableObject {
         if notifyEnabled { refreshNotifications() }   // queued bodies are language-specific
     }
 
+    func setSutraChoice(_ c: SutraChoice) {
+        guard c != sutraChoice else { return }
+        sutraChoice = c
+        UserDefaults.standard.set(c.rawValue, forKey: Self.kSutra)
+        showing = .day(Date())                        // the old date may not exist in the new pool
+        if notifyEnabled { refreshNotifications() }   // queued verses came from the old pool
+    }
+
     func setWarmPaper(_ enabled: Bool) {
         warmPaper = enabled
         UserDefaults.standard.set(enabled, forKey: Self.kWarmPaper)
@@ -550,7 +562,7 @@ final class VerseViewModel: ObservableObject {
     }
 
     var favoriteVerses: [Verse] {
-        verses.filter { favorites.contains($0.id) }
+        allVerses.filter { favorites.contains($0.id) }
     }
 
     private func persistFavorites() {
@@ -1163,6 +1175,32 @@ struct SutraView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     }
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(viewModel.lang == .zh ? "每日經典" : "Daily Sutra")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    Picker("", selection: Binding(
+                        get: { viewModel.sutraChoice },
+                        set: { viewModel.setSutraChoice($0) }
+                    )) {
+                        ForEach(SutraChoice.allCases) { c in
+                            Text(c.label(zh: viewModel.lang == .zh)).tag(c)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+
+                    Text(viewModel.lang == .zh
+                         ? "每日經文只從所選經典（共 \(viewModel.verses.count) 段）挑選；切換後今日經文可能不同。"
+                         : "Daily verses come only from your choice (\(viewModel.verses.count) passages). Switching can change today's verse.")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
                 }
                 .padding(10)
                 .frame(maxWidth: .infinity, alignment: .leading)

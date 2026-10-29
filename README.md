@@ -35,6 +35,7 @@ Built with SwiftUI + AppKit, Swift Package Manager. Native macOS, zero web depen
 
 ### Customization & Settings
 - ⚙️ **Dedicated Settings Panel** — clean preferences sheet for system and reading controls
+- 📖 **Daily Sutra choice** — draw the daily verse from both sutras (default), Diamond only (32 verses) or Heart only (10 verses); switching can change today's verse
 - 📌 **Window Placement (Attached vs Draggable)** — switch between anchored directly beneath the menu bar status icon (centered with 2pt gap and screen edge margins) or freely draggable across screens with coordinate memory; includes smooth 0.2s ease-out snapping animation, resize anchoring (top edge pinned below menu bar), and an instant "Snap to Menu Bar" reset button
 - 📜 **Warm Paper Tint** — toggleable soothing cream / charcoal amber undertone
 - 🔤 **Font scaling**: 0.85× to 1.8× (persisted with percentage readout)
