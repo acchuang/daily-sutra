@@ -118,6 +118,9 @@ final class DailyPickTests: XCTestCase {
             XCTAssertFalse(verse.sourceEn?.isEmpty ?? true, "English source credit missing: \(verse.id)")
             XCTAssertFalse(verse.sourceZh?.isEmpty ?? true, "Chinese source credit missing: \(verse.id)")
             XCTAssertNotEqual(verse.en, verse.verseEn, "Full-text English must be the sourced translation, not the paraphrase: \(verse.id)")
+            XCTAssertFalse(verse.en.contains("_"), "Full-text English has raw italic markup: \(verse.id)")
+            XCTAssertFalse(verse.en.contains("\n "), "Full-text English has indented or hard-wrapped lines: \(verse.id)")
+            XCTAssertFalse(verse.en.contains("INDEX") || verse.en.contains("TRANSCRIBER"), "Full-text English has book back matter: \(verse.id)")
         }
     }
 }

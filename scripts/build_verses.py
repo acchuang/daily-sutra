@@ -82,14 +82,15 @@ def segment_english(raw):
         idx = sections[3].index(ch4_split)
         sections[4] = sections[3][idx:].strip()
         sections[3] = sections[3][:idx].strip()
-    # strip footnote blocks: cut at first run of blank line then "  [N]" footnote
-    def clean(t):
-        # remove inline [N] reference markers
-        t = re.sub(r"\[\d+\]", "", t)
-        # collapse whitespace
-        t = re.sub(r"\n{3,}", "\n\n", t).strip()
-        return t
-    return {k: clean(v) for k,v in sections.items()}
+    # drop [N] markers, then tidy; the translator's footnotes stay in the text
+    return {k: tidy(re.sub(r"\[\d+\]", "", v)) for k,v in sections.items()}
+
+def tidy(t):
+    """Gutenberg plain text -> display text: drop the book index that trails
+    the last chapter, unwrap hard line breaks, strip indents and _italic_ marks (the source has an unmatched one, so no pairing)."""
+    t = re.split(r"\n\s*INDEX\s*\n", t)[0]
+    paras = (" ".join(p.split()) for p in re.split(r"\n\s*\n", t.replace("_", "")))
+    return "\n\n".join(p for p in paras if p)
 
 def main():
     out_path = sys.argv[1]
