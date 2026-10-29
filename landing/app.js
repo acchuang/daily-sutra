@@ -357,7 +357,7 @@
 
       showcase_tag: '真實介面呈現',
       showcase_title: '安靜融入你的 Mac 桌面。',
-      showcase_sub: '針對 macOS 14 Sonoma 以上設計，深色模式與淺色模式都能自然切換。',
+      showcase_sub: '針對 macOS 14 Sonoma 以上設計，外觀自動跟隨系統的深色或淺色模式。',
       showcase_tab_en: '英文晨讀卡片',
       showcase_tab_zh: '中文經文卡片',
       showcase_tab_settings: '偏好設定面板',
