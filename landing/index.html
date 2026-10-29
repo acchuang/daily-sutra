@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-i18n="site_title">Daily Sutra — Contemplative macOS Menu Bar App</title>
   
-  <meta name="description" content="A contemplative macOS menu bar app delivering one verse from the Diamond Sutra and Heart Sutra each day. Mathematical determinism, classical Chinese, modern reflections, and zero noise.">
+  <meta name="description" content="A contemplative macOS menu bar app delivering one verse from the Diamond Sutra and Heart Sutra each day. Choose the Diamond Sutra, the Heart Sutra, or both. Classical Chinese, plain-language reflections, and zero noise.">
   <meta name="keywords" content="Daily Sutra, Diamond Sutra, Heart Sutra, macOS, menu bar app, mindfulness, Buddhist contemplation, Kumarajiva, Xuanzang, Swift, SwiftUI">
   <meta name="author" content="acchuang">
   <meta name="theme-color" content="#f5f4ed">
@@ -21,7 +21,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://daily-sutra.pages.dev/">
   <meta name="twitter:title" content="Daily Sutra — Contemplative macOS Menu Bar App">
-  <meta name="twitter:description" content="One verse each day from the Diamond Sutra and Heart Sutra, floating quietly in your menu bar. Mathematical determinism, classical Chinese, modern reflections.">
+  <meta name="twitter:description" content="One verse each day from the Diamond Sutra and Heart Sutra, floating quietly in your menu bar. Choose the Diamond Sutra, the Heart Sutra, or both.">
   <meta name="twitter:image" content="https://daily-sutra.pages.dev/assets/screenshot.png">
 
   <!-- Favicons -->
@@ -109,7 +109,7 @@
       </h1>
 
       <p class="hero-subtitle" data-i18n="hero_sub">
-        One verse each day from the Diamond Sutra and Heart Sutra, floating quietly in your menu bar. Mathematical determinism, authentic classical Chinese, modern reflections, and zero digital noise.
+        One passage each day from the Diamond Sutra, the Heart Sutra, or both, floating quietly in your menu bar. A fixed daily pick, classical Chinese text, plain-language reflections, and zero digital noise.
       </p>
 
       <div class="hero-cta-group">
@@ -274,7 +274,7 @@
         </div>
 
         <p class="simulator-note" data-i18n="sim_note">
-          Notice: This simulator runs the same date-seeded cycle shuffle as the native Mac app. Within an app version, the same calendar date always gives the same verse, and every verse appears once per 42-day cycle.
+          Notice: This simulator runs the same date-seeded cycle shuffle as the native Mac app. Within an app version, the same calendar date always gives the same verse, and every verse appears once per cycle. This demo reads from both sutras (42 days); the app can also read from Diamond only (32) or Heart only (10).
         </p>
 
       </div>
@@ -288,7 +288,7 @@
         <div class="section-tag" data-i18n="phil_tag">The Anti-Algorithm Manifesto</div>
         <h2 class="section-title" data-i18n="phil_title">Designed to ground your attention, not capture it.</h2>
         <p class="section-subtitle" data-i18n="phil_sub">
-          Most software fights for your dopamine. Daily Sutra is a digital shrine: calm, quiet, mathematically certain, and gone the moment you click away.
+          Most software fights for your dopamine. Daily Sutra is a digital shrine: calm, quiet, predictable, and gone the moment you click away.
         </p>
       </div>
 
@@ -297,7 +297,7 @@
           <div class="value-icon-box">🔢</div>
           <h3 class="value-title" data-i18n="phil_card1_title">Deterministic Calendar Math</h3>
           <p class="value-desc" data-i18n="phil_card1_desc">
-            No AI recommendations, no feeds, and no engagement tracking. A date-seeded shuffle picks the verse for each day, so every verse appears once per 42-day cycle. Within an app version, the same calendar date always gives the same verse, anywhere, and tomorrow brings the next with gentle inevitability.
+            No AI recommendations, no feeds, and no engagement tracking. A date-seeded shuffle picks the verse for each day, so every verse appears once per cycle (42 days with both sutras). Within an app version, the same calendar date always gives the same verse, anywhere, and tomorrow brings the next with gentle inevitability.
           </p>
         </div>
 
@@ -305,7 +305,7 @@
           <div class="value-icon-box">📜</div>
           <h3 class="value-title" data-i18n="phil_card2_title">42 Sacred Contemplations</h3>
           <p class="value-desc" data-i18n="phil_card2_desc">
-            Curated from the 32 chapters of the Diamond Sutra and 10 contemplative movements of the Heart Sutra. Unified in a single contemplative pool, presented without doctrinal overwhelm.
+            Curated from the 32 chapters of the Diamond Sutra and 10 contemplative movements of the Heart Sutra. Read both in one pool, or choose Diamond only or Heart only in Settings.
           </p>
         </div>
 
@@ -313,7 +313,7 @@
           <div class="value-icon-box">🏮</div>
           <h3 class="value-title" data-i18n="phil_card3_title">Bilingual Parallel Dignity</h3>
           <p class="value-desc" data-i18n="phil_card3_desc">
-            Authentic 5th-century Kumārajīva (鳩摩羅什) classical Chinese and Xuanzang (玄奘) Heart Sutra text, accompanied by contemporary English paraphrases, plain-language explanations, and reflective commentary.
+            Authentic 5th-century Kumārajīva (鳩摩羅什) classical Chinese and Xuanzang (玄奘) Heart Sutra text, accompanied by contemporary English paraphrases, plain-language explanations, and reflective commentary. Source credits sit at the foot of every Full Text view, and the English pull-quote is labeled as an AI-assisted paraphrase.
           </p>
         </div>
 
@@ -501,7 +501,7 @@
           <div class="gatekeeper-callout">
             <strong data-i18n="gatekeeper_title">macOS Gatekeeper Note</strong>
             <p data-i18n="gatekeeper_desc" style="margin-top: 6px;">
-              Daily Sutra is an open-source indie app. Because it is distributed outside the Mac App Store without an Apple Developer ID signature, macOS may display an unidentified developer warning on first launch. Simply right-click DailySutra.app and select Open, or run:
+              Daily Sutra is an open-source indie app. Because it is distributed outside the Mac App Store without an Apple Developer ID signature (builds are self-signed, not notarized), macOS may display an unidentified developer warning on first launch. Simply right-click DailySutra.app and select Open, or run:
             </p>
             <div class="code-box">
               <code>xattr -dr com.apple.quarantine /Applications/DailySutra.app</code>
@@ -549,7 +549,7 @@
             <span class="faq-icon">▾</span>
           </button>
           <div class="faq-answer" data-i18n="faq_a1">
-            Daily Sutra contains 42 contemplative passages: all 32 chapters of the Diamond Sutra (金剛般若波羅蜜經, Kumārajīva text) and 10 contemplative verses from the Heart Sutra (般若波羅蜜多心經, Xuanzang text). The app unifies them into a single pool without announcing which sutra a verse belongs to, keeping your focus on contemplation rather than cataloging.
+            Daily Sutra contains 42 contemplative passages: all 32 chapters of the Diamond Sutra (金剛般若波羅蜜經, Kumārajīva text) and 10 contemplative verses from the Heart Sutra (般若波羅蜜多心經, Xuanzang text). By default they share one pool; the card header reads "Chapter N" or "Heart Sutra · N". In Settings, set Daily Sutra to Both, Diamond or Heart to read from just one.
           </div>
         </div>
 
@@ -569,7 +569,7 @@
             <span class="faq-icon">▾</span>
           </button>
           <div class="faq-answer" data-i18n="faq_a3">
-            Every day at midnight, the app re-rolls using a deterministic date-seeded shuffle: every verse appears once per 42-day cycle, in an order fixed by the cycle number. Within an app version, the same calendar date gives the same verse anywhere in the world (the date is read in your local time zone), without needing an internet connection or server.
+            Every day at midnight, the app re-rolls using a deterministic date-seeded shuffle: every verse appears once per cycle (42 days with both sutras, 32 Diamond only, 10 Heart only), in an order fixed by the cycle number. Within an app version, the same calendar date gives the same verse anywhere in the world (the date is read in your local time zone), without needing an internet connection or server.
           </div>
         </div>
 
