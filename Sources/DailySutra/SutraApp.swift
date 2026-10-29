@@ -1056,7 +1056,7 @@ struct SutraView: View {
                                             .lineLimit(1)
                                             .truncationMode(.tail)
                                             .foregroundStyle(.primary)
-                                        Text("\(viewModel.lang == .zh ? "第" : "Chapter ")\(v.index)\(viewModel.lang == .zh ? "章" : "")")
+                                        Text(viewModel.text.position(v))
                                             .font(.system(size: 10))
                                             .foregroundStyle(.tertiary)
                                     }
@@ -1197,8 +1197,8 @@ struct SutraView: View {
                     .labelsHidden()
 
                     Text(viewModel.lang == .zh
-                         ? "每日經文只從所選經典（共 \(viewModel.verses.count) 段）挑選；切換後今日經文可能不同。"
-                         : "Daily verses come only from your choice (\(viewModel.verses.count) passages). Switching can change today's verse.")
+                         ? "每 \(viewModel.verses.count) 天內每段經文各出現一次，之後才會重複；切換後今日經文可能不同。"
+                         : "Each of the \(viewModel.verses.count) passages appears once before any repeats. Switching can change today's verse.")
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
                 }

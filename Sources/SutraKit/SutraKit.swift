@@ -128,10 +128,16 @@ public struct VerseText {
         return f.string(from: date)
     }
 
+    /// Diamond verses are chapters; Heart verses are passages of a single text.
+    public func position(_ v: Verse) -> String {
+        if v.sutra == "heart" { return zh ? "心經 · 第\(v.index)段" : "Heart Sutra · \(v.index)" }
+        return zh ? "第\(v.index)章" : "Chapter \(v.index)"
+    }
+
     public func title(_ v: Verse?, on date: Date) -> String {
         let day = weekday(date)
         guard let v else { return day }
-        return zh ? "\(day) — 第\(v.index)章" : "\(day) — Chapter \(v.index)"
+        return "\(day) — \(position(v))"
     }
 
     public func blessing(_ v: Verse?, on date: Date) -> String {

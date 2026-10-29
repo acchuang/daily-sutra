@@ -162,6 +162,13 @@ final class VerseTextTests: XCTestCase {
                        "no explanation must not render a dangling 'Explanation:' label")
     }
 
+    func testHeartVersesAreLabelledAsPassagesNotChapters() {
+        let heart = Verse(index: 4, sutra: "heart", titleZh: "", titleEn: "", zh: "", en: "",
+                          verseEn: "x", verseZh: "x", explEn: "", explZh: "", meaning: "", meaningZh: "")
+        XCTAssertEqual(VerseText(zh: false).title(heart, on: monday), "Monday — Heart Sutra · 4")
+        XCTAssertEqual(VerseText(zh: true).title(heart, on: monday), "星期一 — 心經 · 第4段")
+    }
+
     func testWeekdayFollowsTheGivenDate() {
         XCTAssertEqual(VerseText(zh: false).title(v, on: monday), "Monday — Chapter 3")
         XCTAssertEqual(VerseText(zh: false).blessing(v, on: monday), "May your Monday be spacious. 🌿")
