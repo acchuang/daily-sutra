@@ -17,6 +17,29 @@ enum AppLang: String, CaseIterable {
     var label: String { self == .en ? "EN" : "中" }
 }
 
+enum AppearanceChoice: String, CaseIterable, Identifiable {
+    case system, light, dark
+
+    var id: String { rawValue }
+
+    /// nil follows the system; the panel's SwiftUI colorScheme tracks this.
+    var nsAppearance: NSAppearance? {
+        switch self {
+        case .system: return nil
+        case .light: return NSAppearance(named: .aqua)
+        case .dark: return NSAppearance(named: .darkAqua)
+        }
+    }
+
+    func label(zh: Bool) -> String {
+        switch self {
+        case .system: return zh ? "跟隨系統" : "System"
+        case .light: return zh ? "淺色" : "Light"
+        case .dark: return zh ? "深色" : "Dark"
+        }
+    }
+}
+
 /// What the panel is showing. A day resolves to a verse through DailyPick, so
 /// prev/next move by real calendar days and the weekday shown matches the verse.
 /// A favorite has no date of its own, so it is carried directly.
@@ -73,6 +96,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UNUs
         vm.$pinned
             .receive(on: RunLoop.main)
             .sink { [weak self] pinned in self?.panel?.hidesOnDeactivate = !pinned }
+            .store(in: &cancellables)
+
+        // Appearance override (System / Light / Dark). Sink fires on subscribe, so the saved choice applies at launch.
+        vm.$appearance
+            .receive(on: RunLoop.main)
+            .sink { [weak self] a in self?.panel?.appearance = a.nsAppearance }
             .store(in: &cancellables)
 
         // Attach to menu bar toggle: lock under status item or enable dragging.
@@ -375,11 +404,12 @@ final class VerseViewModel: ObservableObject {
     @Published var notifyDeniedAlert = false
     @Published var copyFeedback = false
     @Published var warmPaper: Bool
+    @Published var appearance: AppearanceChoice
     @Published var attachToMenubar: Bool
 
     private static let kLang = "AppLang", kScale = "FontScale", kFavs = "Favorites"
     private static let kNotify = "NotifyEnabled", kNotifyAt = "NotifyMinutes"
-    private static let kOnboarded = "OnboardingCompleted", kWarmPaper = "WarmPaperTheme", kAttach = "AttachToMenubar", kSutra = "SutraChoice"
+    private static let kOnboarded = "OnboardingCompleted", kWarmPaper = "WarmPaperTheme", kAttach = "AttachToMenubar", kSutra = "SutraChoice", kAppearance = "AppearanceChoice"
     private static let defaultNotifyMinutes = 8 * 60
     private var rolloverTimer: Timer?
     private var currentDay: Int = 0
@@ -396,6 +426,7 @@ final class VerseViewModel: ObservableObject {
         let savedMinutes = UserDefaults.standard.object(forKey: Self.kNotifyAt) as? Int
         self.notifyMinutes = savedMinutes ?? Self.defaultNotifyMinutes
         self.warmPaper = UserDefaults.standard.bool(forKey: Self.kWarmPaper)
+        self.appearance = AppearanceChoice(rawValue: UserDefaults.standard.string(forKey: Self.kAppearance) ?? "") ?? .system
         if UserDefaults.standard.object(forKey: Self.kAttach) == nil {
             self.attachToMenubar = true
         } else {
@@ -499,6 +530,11 @@ final class VerseViewModel: ObservableObject {
     func setWarmPaper(_ enabled: Bool) {
         warmPaper = enabled
         UserDefaults.standard.set(enabled, forKey: Self.kWarmPaper)
+    }
+
+    func setAppearance(_ a: AppearanceChoice) {
+        appearance = a
+        UserDefaults.standard.set(a.rawValue, forKey: Self.kAppearance)
     }
 
     func setAttachToMenubar(_ v: Bool) {
@@ -1206,6 +1242,30 @@ struct SutraView: View {
                     Text(viewModel.lang == .zh
                          ? "每 \(viewModel.verses.count) 天內每段經文各出現一次，之後才會重複；切換後今日經文可能不同。"
                          : "Each of the \(viewModel.verses.count) passages appears once before any repeats. Switching can change today's verse.")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(viewModel.lang == .zh ? "外觀" : "Appearance")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    Picker("", selection: Binding(
+                        get: { viewModel.appearance },
+                        set: { viewModel.setAppearance($0) }
+                    )) {
+                        ForEach(AppearanceChoice.allCases) { a in
+                            Text(a.label(zh: viewModel.lang == .zh)).tag(a)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+
+                    Text(viewModel.lang == .zh ? "選擇淺色、深色，或跟隨系統外觀。" : "Light, dark, or follow the system appearance.")
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
                 }
