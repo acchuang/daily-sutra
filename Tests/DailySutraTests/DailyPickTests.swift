@@ -169,6 +169,11 @@ final class VerseTextTests: XCTestCase {
         XCTAssertEqual(VerseText(zh: true).title(heart, on: monday), "星期一 — 心經 · 第4段")
     }
 
+    func testOnlyTheEnglishQuoteCarriesTheParaphraseNote() {
+        XCTAssertNotNil(VerseText(zh: false).quoteNote)
+        XCTAssertNil(VerseText(zh: true).quoteNote)
+    }
+
     func testWeekdayFollowsTheGivenDate() {
         XCTAssertEqual(VerseText(zh: false).title(v, on: monday), "Monday — Chapter 3")
         XCTAssertEqual(VerseText(zh: false).blessing(v, on: monday), "May your Monday be spacious. 🌿")

@@ -812,6 +812,13 @@ struct SutraView: View {
                         .textSelection(.enabled)
                         .accessibilityLabel(viewModel.lang == .zh ? "經文：\(viewModel.text.quote(v))" : "Verse: \(viewModel.text.quote(v))")
 
+                    if let note = viewModel.text.quoteNote {
+                        Text(note)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .padding(.top, -8)
+                    }
+
                     // Unified Explanation paragraph without duplicate label
                     if !explanation.isEmpty {
                         Text(explanation)

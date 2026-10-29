@@ -98,6 +98,9 @@ public struct VerseText {
         zh ? v.verseZh : "\u{201C}\(v.verseEn)\u{201D}"
     }
 
+    /// Caption under the EN pull-quote: it is a paraphrase, not a quotation. The ZH line is the classical text.
+    public var quoteNote: String? { zh ? nil : "Paraphrase, AI-assisted" }
+
     /// Single-line form for list rows.
     public func firstLine(_ v: Verse) -> String {
         (zh ? v.verseZh : v.verseEn).components(separatedBy: "\n").first ?? ""
