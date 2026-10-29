@@ -72,6 +72,11 @@
   function formatDateHeading(date, verse, lang) {
     const dayName = formatWeekday(date, lang);
     if (!verse) return dayName;
+    if (verse.sutra === 'heart') {
+      return lang === 'zh'
+        ? `${dayName} — 心經 · 第${verse.index}段`
+        : `${dayName} — Heart Sutra · ${verse.index}`;
+    }
     return lang === 'zh'
       ? `${dayName} — 第${verse.index}章`
       : `${dayName} — Chapter ${verse.index}`;
@@ -199,7 +204,7 @@
       download_btn: 'Download v1.2.1',
       eyebrow_text: '🌸 A Contemplative macOS Companion · Open Source & 100% Offline',
       hero_title: 'Quiet wisdom for your morning desk.',
-      hero_sub: 'One verse each day from the Diamond Sutra and Heart Sutra, floating quietly in your menu bar. Mathematical determinism, authentic classical Chinese, modern reflections, and zero digital noise.',
+      hero_sub: 'One passage each day from the Diamond Sutra, the Heart Sutra, or both, floating quietly in your menu bar. A fixed daily pick, classical Chinese text, plain-language reflections, and zero digital noise.',
       hero_cta_download: 'Download for macOS (Free)',
       hero_cta_simulator: 'Try Live Simulator ↓',
       hero_meta_os: 'macOS 14 Sonoma or later',
@@ -211,7 +216,7 @@
       sim_today_btn: 'Today',
       sim_warm_paper_btn: 'Warm Paper',
       sim_copy_btn: 'Copy Verse (⌘C)',
-      sim_note: 'Notice: This simulator runs the same date-seeded cycle shuffle as the native Mac app. Within an app version, the same calendar date always gives the same verse, and every verse appears once per 42-day cycle.',
+      sim_note: 'Notice: This simulator runs the same date-seeded cycle shuffle as the native Mac app. Within an app version, the same calendar date always gives the same verse, and every verse appears once per cycle. This demo reads from both sutras (42 days); the app can also read from Diamond only (32) or Heart only (10).',
 
       preset_today: "Today's Verse",
       preset_ch1: "Ch. 1: The Ordinary Meal",
@@ -222,13 +227,13 @@
 
       phil_tag: 'The Anti-Algorithm Manifesto',
       phil_title: 'Designed to ground your attention, not capture it.',
-      phil_sub: 'Most software fights for your dopamine. Daily Sutra is a digital shrine: calm, quiet, mathematically certain, and gone the moment you click away.',
+      phil_sub: 'Most software fights for your dopamine. Daily Sutra is a digital shrine: calm, quiet, predictable, and gone the moment you click away.',
       phil_card1_title: 'Deterministic Calendar Math',
-      phil_card1_desc: 'No AI recommendations, no feeds, and no engagement tracking. A date-seeded shuffle picks the verse for each day, so every verse appears once per 42-day cycle. Within an app version, the same calendar date always gives the same verse, anywhere, and tomorrow brings the next with gentle inevitability.',
+      phil_card1_desc: 'No AI recommendations, no feeds, and no engagement tracking. A date-seeded shuffle picks the verse for each day, so every verse appears once per cycle (42 days with both sutras). Within an app version, the same calendar date always gives the same verse, anywhere, and tomorrow brings the next with gentle inevitability.',
       phil_card2_title: '42 Sacred Contemplations',
-      phil_card2_desc: 'Curated from the 32 chapters of the Diamond Sutra and 10 contemplative movements of the Heart Sutra. Unified in a single contemplative pool, presented without doctrinal overwhelm.',
+      phil_card2_desc: 'Curated from the 32 chapters of the Diamond Sutra and 10 contemplative movements of the Heart Sutra. Read both in one pool, or choose Diamond only or Heart only in Settings.',
       phil_card3_title: 'Bilingual Parallel Dignity',
-      phil_card3_desc: 'Authentic 5th-century Kumārajīva (鳩摩羅什) classical Chinese and Xuanzang (玄奘) Heart Sutra text, accompanied by contemporary English paraphrases, plain-language explanations, and reflective commentary.',
+      phil_card3_desc: 'Authentic 5th-century Kumārajīva (鳩摩羅什) classical Chinese and Xuanzang (玄奘) Heart Sutra text, accompanied by contemporary English paraphrases, plain-language explanations, and reflective commentary. Source credits sit at the foot of every Full Text view, and the English pull-quote is labeled as an AI-assisted paraphrase.',
       phil_card4_title: 'Warm Paper Reading Ambience',
       phil_card4_desc: 'Inspired by traditional Xuan paper (宣紙淡墨). Switch seamlessly between modern glass and soothing warm paper tint to soothe your eyes during early dawn or late evening reflections.',
 
@@ -255,7 +260,7 @@
       showcase_tab_settings: 'Settings & Preferences',
       showcase_cap_en: 'Modern English verse, plain-language explanation, and daily blessing anchored right below the menu bar.',
       showcase_cap_zh: 'Authentic Kumārajīva & Xuanzang classical lines with modern Traditional Chinese reflections.',
-      showcase_cap_settings: 'Native macOS settings sheet: font scaling, reading ambience (warm paper tint), and window placement docking.',
+      showcase_cap_settings: 'Native macOS settings sheet: choose Both, Diamond or Heart, font scaling, reading ambience (warm paper tint), and window placement docking.',
 
       install_tag: 'Getting Started',
       install_title: 'Install Daily Sutra in seconds.',
@@ -266,7 +271,7 @@
       install_step3_title: '3. Open & Contemplate',
       install_step3_desc: 'Click the lotus icon in your menu bar. The verse panel opens instantly.',
       gatekeeper_title: 'macOS Gatekeeper Note',
-      gatekeeper_desc: 'Daily Sutra is an open-source indie app. Because it is distributed outside the Mac App Store without an Apple Developer ID signature, macOS may display an unidentified developer warning on first launch. Simply right-click DailySutra.app and select Open, or run:',
+      gatekeeper_desc: 'Daily Sutra is an open-source indie app. Because it is distributed outside the Mac App Store without an Apple Developer ID signature (builds are self-signed, not notarized), macOS may display an unidentified developer warning on first launch. Simply right-click DailySutra.app and select Open, or run:',
 
       sidebar_brew_title: 'Homebrew Cask',
       sidebar_brew_desc: 'Install in one command. The cask clears the Gatekeeper quarantine flag for you:',
@@ -276,11 +281,11 @@
       faq_tag: 'Questions & Answers',
       faq_title: 'Frequently Asked Questions',
       faq_q1: 'Which sutras are included?',
-      faq_a1: 'Daily Sutra contains 42 contemplative passages: all 32 chapters of the Diamond Sutra (金剛般若波羅蜜經, Kumārajīva text) and 10 contemplative verses from the Heart Sutra (般若波羅蜜多心經, Xuanzang text). The app unifies them into a single pool without announcing which sutra a verse belongs to, keeping your focus on contemplation rather than cataloging.',
+      faq_a1: 'Daily Sutra contains 42 contemplative passages: all 32 chapters of the Diamond Sutra (金剛般若波羅蜜經, Kumārajīva text) and 10 contemplative verses from the Heart Sutra (般若波羅蜜多心經, Xuanzang text). By default they share one pool; the card header reads "Chapter N" or "Heart Sutra · N". In Settings, set Daily Sutra to Both, Diamond or Heart to read from just one.',
       faq_q2: 'Does Daily Sutra collect any personal data or make network calls?',
       faq_a2: 'None whatsoever. Daily Sutra is completely offline. The entire verse database is bundled within the app. There are no tracking libraries, no Google Analytics, no external API calls, and no accounts required.',
       faq_q3: 'How does the daily verse rotate?',
-      faq_a3: 'Every day at midnight, the app re-rolls using a deterministic date-seeded shuffle: every verse appears once per 42-day cycle, in an order fixed by the cycle number. Within an app version, the same calendar date gives the same verse anywhere in the world (the date is read in your local time zone), without needing an internet connection or server.',
+      faq_a3: 'Every day at midnight, the app re-rolls using a deterministic date-seeded shuffle: every verse appears once per cycle (42 days with both sutras, 32 Diamond only, 10 Heart only), in an order fixed by the cycle number. Within an app version, the same calendar date gives the same verse anywhere in the world (the date is read in your local time zone), without needing an internet connection or server.',
       faq_q4: 'Can I set an optional morning reminder?',
       faq_a4: 'Yes! Open Settings (Cmd+,) and enable Daily Notification at your preferred morning hour (e.g., 08:00 AM). Clicking the notification immediately reveals the morning verse.',
       faq_q5: 'Was AI used to make this?',
@@ -302,7 +307,7 @@
       download_btn: '下載 v1.2.1',
       eyebrow_text: '🌸 macOS 原生選單列小工具 · 開源 · 100% 離線無追蹤',
       hero_title: '在忙碌的工作桌面，\n留一段清淨晨光。',
-      hero_sub: '每天早上在選單列打開一則金剛經或心經。不靠演算法，純粹依照日期輪播；收錄鳩摩羅什與玄奘大師經典譯本，並附上白話解讀與每日祝福。',
+      hero_sub: '每天早上在選單列打開一則金剛經或心經，也可以在設定裡只選其中一部。不靠演算法，純粹依照日期輪播；收錄鳩摩羅什與玄奘大師經典譯本，並附上白話解讀與每日祝福。',
       hero_cta_download: '免費下載 macOS 版',
       hero_cta_simulator: '直接在線上試用 ↓',
       hero_meta_os: '支援 macOS 14 Sonoma 或更新版本',
@@ -314,7 +319,7 @@
       sim_today_btn: '今日',
       sim_warm_paper_btn: '宣紙色溫',
       sim_copy_btn: '複製偈頌 (⌘C)',
-      sim_note: '說明：這個線上模擬器和 Mac 原生 App 使用相同的日期洗牌方式。同一個 App 版本裡，同一個日期不論在哪裡讀到的經文都一樣，而且每 42 天每則經文剛好出現一次。',
+      sim_note: '說明：這個線上模擬器和 Mac 原生 App 使用相同的日期洗牌方式。同一個 App 版本裡，同一個日期不論在哪裡讀到的經文都一樣，而且每則經文每個週期剛好出現一次。這個模擬器同時讀兩部經（42 天）；App 也可以只讀金剛經（32 天）或只讀心經（10 天）。',
 
       preset_today: '今日偈頌',
       preset_ch1: '第 1 章：日常著衣乞食',
@@ -327,11 +332,11 @@
       phil_title: '安靜退居幕後，不爭奪你的注意力。',
       phil_sub: '多數軟體都在搶你的注意力。Daily Sutra 只安靜待在選單列，點開看幾秒、滑鼠移開就收起，不跳通知、不打擾工作。',
       phil_card1_title: '按日期固定輪播，不靠演算法',
-      phil_card1_desc: '沒有推薦演算法，沒有動態牆，也不會追蹤使用習慣。每天依照西元日期洗牌挑選，每 42 天每則剛好出現一次，同一個 App 版本裡同一個日期不論在哪裡看到的都是同一則偈頌，明天時間一到自動換下一則。',
+      phil_card1_desc: '沒有推薦演算法，沒有動態牆，也不會追蹤使用習慣。每天依照西元日期洗牌挑選，每則每個週期剛好出現一次（兩部皆選為 42 天），同一個 App 版本裡同一個日期不論在哪裡看到的都是同一則偈頌，明天時間一到自動換下一則。',
       phil_card2_title: '42 則經典般若篇章',
-      phil_card2_desc: '精選金剛經 32 分與心經 10 段核心觀照。每天早上花一兩分鐘讀一則，不賣弄玄學，踏實沉澱。',
+      phil_card2_desc: '精選金剛經 32 分與心經 10 段核心觀照。可兩部一起讀，也能在設定裡只選金剛經或只選心經。每天早上花一兩分鐘讀一則，不賣弄玄學，踏實沉澱。',
       phil_card3_title: '原文與白話並列',
-      phil_card3_desc: '完整收錄五世紀鳩摩羅什大師譯本與七世紀玄奘大師心經原典，附上現代英譯、平實白話解釋與生活體會。',
+      phil_card3_desc: '完整收錄五世紀鳩摩羅什大師譯本與七世紀玄奘大師心經原典，附上現代英譯、平實白話解釋與生活體會。每則完整經文底部都有出處標註，英文金句也會標明是 AI 輔助意譯。',
       phil_card4_title: '宣紙色溫閱讀感',
       phil_card4_desc: '開啟宣紙色溫（Warm Paper Tint），底色會換成淡淡的米黃色，清晨或深夜看螢幕比較不刺眼。',
 
@@ -358,7 +363,7 @@
       showcase_tab_settings: '偏好設定面板',
       showcase_cap_en: '現代英譯偈頌、白話解讀與專屬星期祝福，平時固定在選單列正下方。',
       showcase_cap_zh: '鳩摩羅什與玄奘大師經典原文，附上現代白話解讀與生活體會。',
-      showcase_cap_settings: '偏好設定面板：可自訂字體大小、切換宣紙色溫，以及調整視窗是否依附在選單列。',
+      showcase_cap_settings: '偏好設定面板：可選兩部皆選、金剛經或心經，並自訂字體大小、切換宣紙色溫，以及調整視窗是否依附在選單列。',
 
       install_tag: '安裝方式',
       install_title: '三步驟直接開始使用。',
@@ -369,7 +374,7 @@
       install_step3_title: '3. 點選單列圖示',
       install_step3_desc: '開啟後，頂部選單列就會出現蓮花圖示，點一下即可展開晨讀卡片。',
       gatekeeper_title: 'macOS Gatekeeper 安全提示',
-      gatekeeper_desc: 'Daily Sutra 是個人開源軟體，未購買 Apple 商業開發者憑證簽章，首次打開時 macOS 可能會顯示「未識別的開發者」提示。只要在 DailySutra.app 上按右鍵選「打開」確認，或在終端機執行：',
+      gatekeeper_desc: 'Daily Sutra 是個人開源軟體，未購買 Apple 商業開發者憑證簽章（以自簽憑證簽署，未經公證），首次打開時 macOS 可能會顯示「未識別的開發者」提示。只要在 DailySutra.app 上按右鍵選「打開」確認，或在終端機執行：',
 
       sidebar_brew_title: 'Homebrew 安裝',
       sidebar_brew_desc: '習慣使用終端機的話，一行指令即可安裝，並自動移除 Gatekeeper 隔離標記：',
@@ -379,11 +384,11 @@
       faq_tag: '常見問題',
       faq_title: '你可能會想了解的事',
       faq_q1: 'App 收錄了哪些經文？',
-      faq_a1: '收錄鳩摩羅什大師譯本《金剛般若波羅蜜經》全部 32 分，以及玄奘大師譯本《般若波羅蜜多心經》切出的 10 個核心觀照。App 刻意不特別標註經名，讓讀者能直接專注在當下的文字領會。',
+      faq_a1: '收錄鳩摩羅什大師譯本《金剛般若波羅蜜經》全部 32 分，以及玄奘大師譯本《般若波羅蜜多心經》切出的 10 個核心觀照。預設兩部合併輪播，卡片標題顯示「第 N 章」或「心經 · 第 N 段」。也可以在設定的「每日經典」選擇兩部皆選、金剛經或心經，只讀其中一部。',
       faq_q2: 'App 會收集個人資料或連上網路嗎？',
       faq_a2: '完全不會。Daily Sutra 是 100% 離線軟體，所有經文與程式都在本機內，不依賴任何外部伺服器，更沒有任何分析追蹤碼。',
       faq_q3: '每天更換經文的原理是什麼？',
-      faq_a3: '每天午夜零點，App 會依當天的西元年月日算出今天是第幾天，再用洗牌決定經文：每 42 天每則剛好出現一次。同一個 App 版本裡，同一個日期在世界各地看到的都是同一首偈頌（日期以你所在時區為準）。',
+      faq_a3: '每天午夜零點，App 會依當天的西元年月日算出今天是第幾天，再用洗牌決定經文：每則每個週期剛好出現一次（兩部皆選 42 天，只選金剛經 32 天，只選心經 10 天）。同一個 App 版本裡，同一個日期在世界各地看到的都是同一首偈頌（日期以你所在時區為準）。',
       faq_q4: '可以設定晨間提醒通知嗎？',
       faq_a4: '可以。按下 Cmd+, 打開設定面板，開啟「每日定時提醒」並選擇時間（例如早上 08:00）。點一下通知就會直接展開今天的晨讀卡片。',
       faq_q5: '有用到 AI 製作嗎？',
