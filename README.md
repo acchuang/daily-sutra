@@ -172,4 +172,4 @@ For major changes, open an issue first.
 
 ---
 
-**Daily Sutra v1.1.4** | Made with 🙏 for contemplation and practice
+**Daily Sutra v1.2.0** | Made with 🙏 for contemplation and practice

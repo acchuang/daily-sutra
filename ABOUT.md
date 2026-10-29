@@ -111,7 +111,7 @@ Explanations, meanings, blessings, and app design: **MIT License** (AI-assisted 
 
 ---
 
-**Daily Sutra v1.1.4** | Made with 🙏 for contemplation
+**Daily Sutra v1.2.0** | Made with 🙏 for contemplation
 
 If you find this app useful, consider:
 - Sharing it with friends interested in Buddhist practice
