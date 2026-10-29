@@ -39,6 +39,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${GITHUB_REF#refs/tags/}"
-          gh release create "$tag" build/DailySutra.zip \
-            --title "$tag" \
-            --notes "Daily Sutra $tag. Unzip and move DailySutra.app to /Applications. macOS 14+."
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists, skipping."
+          else
+            gh release create "$tag" build/DailySutra.zip \
+              --title "$tag" \
+              --notes "Daily Sutra $tag. Unzip and move DailySutra.app to /Applications. macOS 14+."
+          fi

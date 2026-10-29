@@ -3,3 +3,5 @@ build/
 *.xcodeproj
 DerivedData/
 PROMOTION.md
+.playwright-mcp/
+HANDOFF.md
