@@ -20,8 +20,15 @@ cp Sources/DailySutra/Resources/verses.json "$BUNDLE/Contents/Resources/verses.j
 cp Sources/DailySutra/Resources/AppIcon.icns "$BUNDLE/Contents/Resources/AppIcon.icns"
 cp Sources/DailySutra/Resources/MenubarIcon.png "$BUNDLE/Contents/Resources/MenubarIcon.png"
 
-echo ">> signing $BUNDLE (ad-hoc)"
-codesign -s - --force --deep "$BUNDLE" 2>/dev/null || codesign -s - --force "$BUNDLE"
+# A stable self-signed identity keeps the designated requirement the same across
+# releases (ad-hoc pins it to the build's cdhash). Falls back to ad-hoc without it.
+IDENTITY="Daily Sutra Self-Signed"
+if ! security find-identity -p codesigning | grep -q "\"$IDENTITY\""; then
+  IDENTITY="-"
+fi
+
+echo ">> signing $BUNDLE ($([ "$IDENTITY" = "-" ] && echo ad-hoc || echo "$IDENTITY"))"
+codesign -s "$IDENTITY" --force --deep "$BUNDLE" 2>/dev/null || codesign -s "$IDENTITY" --force "$BUNDLE"
 
 # ditto keeps AppleDouble (._*) files out of the zip; plain zip/unzip would break the seal
 echo ">> packaging build/$APP.zip"
