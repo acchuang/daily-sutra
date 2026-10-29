@@ -122,6 +122,9 @@ final class DailyPickTests: XCTestCase {
             XCTAssertFalse(verse.en.contains("\n "), "Full-text English has indented or hard-wrapped lines: \(verse.id)")
             XCTAssertFalse(verse.en.contains("INDEX") || verse.en.contains("TRANSCRIBER"), "Full-text English has book back matter: \(verse.id)")
         }
+
+        let chapter4 = diamondVerses.first { $0.index == 4 }?.en ?? ""
+        XCTAssertTrue(chapter4.contains("Let his livelihood be kindliness,\nHis conduct righteousness,"), "Quoted verse must keep its line breaks")
     }
 }
 /// VerseText is the single source of truth for rendered verse text — the panel,

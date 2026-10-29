@@ -85,12 +85,23 @@ def segment_english(raw):
     # drop [N] markers, then tidy; the translator's footnotes stay in the text
     return {k: tidy(re.sub(r"\[\d+\]", "", v)) for k,v in sections.items()}
 
+def is_verse(lines):
+    """Gemmell quotes poetry as 3+ short lines that each open with a capital;
+    prose is column-wrapped mid-sentence, so its lines don't."""
+    return (len(lines) >= 3 and all(re.match(r"[\W_]*[A-Z]", l) for l in lines)
+            and any(len(a) + 1 + len(b.split()[0]) < 64 for a, b in zip(lines, lines[1:])))
+
 def tidy(t):
     """Gutenberg plain text -> display text: drop the book index that trails
-    the last chapter, unwrap hard line breaks, strip indents and _italic_ marks (the source has an unmatched one, so no pairing)."""
+    the last chapter, strip indents and _italic_ marks (the source has an
+    unmatched one, so no pairing), unwrap hard line breaks except in verse."""
     t = re.split(r"\n\s*INDEX\s*\n", t)[0]
-    paras = (" ".join(p.split()) for p in re.split(r"\n\s*\n", t.replace("_", "")))
-    return "\n\n".join(p for p in paras if p)
+    out = []
+    for p in re.split(r"\n\s*\n", t.replace("_", "")):
+        lines = [l.strip() for l in p.split("\n") if l.strip()]
+        if lines:
+            out.append("\n".join(lines) if is_verse(lines) else " ".join(lines))
+    return "\n\n".join(out)
 
 def main():
     out_path = sys.argv[1]
