@@ -147,7 +147,7 @@ public struct VerseText {
             let raw = zh ? v.blessingZh : v.blessing
             if !raw.isEmpty { return raw.replacingOccurrences(of: "{weekday}", with: day) }
         }
-        return zh ? "願你\(day)輕安。🙏" : "May your \(day) be light. 🙏"
+        return zh ? "願你\(day)輕安。" : "May your \(day) be light."
     }
 
     public func clipboard(_ v: Verse, on date: Date) -> String {

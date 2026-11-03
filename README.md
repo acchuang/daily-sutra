@@ -110,6 +110,16 @@ swift build -c release              # Build release binary
 open build/DailySutra.app           # Launch
 ```
 
+### Deploy the landing page
+
+The site is a direct-upload Cloudflare Pages project, so pushing to GitHub does not update it:
+
+```bash
+wrangler pages deploy landing --project-name daily-sutra --branch main
+```
+
+App releases are separate: pushing a `v*` tag runs the Release build workflow.
+
 ### Project Structure
 
 ```

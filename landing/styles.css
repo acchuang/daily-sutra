@@ -668,11 +668,6 @@ button {
   border: 1px solid var(--color-border-subtle);
 }
 
-.verse-explanation-box strong {
-  color: var(--color-text-primary);
-  font-weight: 600;
-}
-
 .verse-blessing-box {
   display: flex;
   align-items: flex-start;

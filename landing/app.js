@@ -133,7 +133,7 @@
     const rawBlessing = isZh ? verse.blessingZh : verse.blessing;
     let renderedBlessing = rawBlessing
       ? rawBlessing.replace(/\{weekday\}/g, weekdayStr)
-      : (isZh ? `願你${weekdayStr}輕安。🙏` : `May your ${weekdayStr} be light. 🙏`);
+      : (isZh ? `願你${weekdayStr}輕安。` : `May your ${weekdayStr} be light.`);
 
     // Extract closing emoji if present
     const emojiMatch = renderedBlessing.match(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]$/u);
@@ -176,7 +176,7 @@
     const rawBlessing = isZh ? verse.blessingZh : verse.blessing;
     const blessing = rawBlessing
       ? rawBlessing.replace(/\{weekday\}/g, weekdayStr)
-      : (isZh ? `願你${weekdayStr}輕安。🙏` : `May your ${weekdayStr} be light. 🙏`);
+      : (isZh ? `願你${weekdayStr}輕安。` : `May your ${weekdayStr} be light.`);
 
     const formattedText = `${title}\n\n${quote}\n\n${explParagraph}\n\n${blessing}`;
 
