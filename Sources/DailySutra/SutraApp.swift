@@ -761,7 +761,7 @@ struct SutraView: View {
                     .frame(width: 16, height: 16)
             }
             Text(viewModel.headerTitle)
-                .font(.system(size: 14, weight: .semibold, design: .serif))
+                .font(.system(size: 14, weight: .medium, design: .serif))
                 .lineLimit(1)
             Spacer()
 
@@ -774,9 +774,9 @@ struct SutraView: View {
                 Text(viewModel.lang == .en ? "中" : "EN")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .buttonStyle(.plain)
             .help(viewModel.lang == .en ? "切換至繁體中文" : "Switch to English")
@@ -831,7 +831,7 @@ struct SutraView: View {
 
     private var verseCardView: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 16) {
                 if viewModel.showOnboarding {
                     onboardingBanner
                 }
@@ -842,7 +842,7 @@ struct SutraView: View {
 
                     // Pull quote
                     Text(viewModel.text.quote(v))
-                        .font(.system(size: 20 * s, weight: .semibold, design: .serif))
+                        .font(.system(size: 20 * s, weight: .regular, design: .serif))
                         .fixedSize(horizontal: false, vertical: true)
                         .lineSpacing(3)
                         .textSelection(.enabled)
@@ -868,11 +868,9 @@ struct SutraView: View {
 
                     Divider()
 
-                    // Closing blessing: italics for English, upright for Chinese
                     Text(viewModel.blessing)
-                        .font(.system(size: 13 * s, weight: .light, design: .serif))
-                        .italic(viewModel.lang == .en)
-                        .foregroundStyle(.tertiary)
+                        .font(.system(size: 13 * s, weight: .regular, design: .serif))
+                        .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
                         .accessibilityLabel(viewModel.blessing)
@@ -883,7 +881,7 @@ struct SutraView: View {
                             showExpanded = true
                         }
                     }) {
-                        HStack(spacing: 5) {
+                        HStack(spacing: 4) {
                             Image(systemName: "book.pages")
                             Text(viewModel.lang == .zh ? "完整經文與對照" : "Full Classical Text")
                         }
@@ -904,14 +902,10 @@ struct SutraView: View {
     }
 
     private var onboardingBanner: some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 14))
-                .foregroundStyle(Color.accentColor)
-                .padding(.top, 2)
+        HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(viewModel.lang == .zh ? "歡迎來到 Daily Sutra" : "Welcome to Daily Sutra")
-                    .font(.system(size: 12, weight: .semibold))
+                Text(viewModel.lang == .zh ? "使用方式" : "How it works")
+                    .font(.system(size: 12, weight: .medium))
                 Text(viewModel.lang == .zh ?
                      "每日隨曆日推送一則金剛經與心經法語。使用 ← / → 瀏覽日期，按 T 回到今日，⌘C 複製經文。" :
                      "One verse each day for reflection. Use ← / → to browse, T for today, ⌘C to copy.")
@@ -921,7 +915,7 @@ struct SutraView: View {
             }
             Spacer(minLength: 0)
             Button(action: {
-                withAnimation { viewModel.completeOnboarding() }
+                withAnimation(.easeInOut(duration: 0.15)) { viewModel.completeOnboarding() }
             }) {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .bold))
@@ -932,10 +926,10 @@ struct SutraView: View {
             .help(viewModel.lang == .zh ? "關閉指引" : "Dismiss guide")
             .accessibilityLabel(viewModel.lang == .zh ? "關閉歡迎指引" : "Dismiss welcome guide")
         }
-        .padding(10)
-        .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(12)
+        .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(Color.primary.opacity(0.08), lineWidth: 1)
         )
         .padding(.bottom, 4)
@@ -943,10 +937,10 @@ struct SutraView: View {
 
     private func fullTextView(verse v: Verse) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Text(viewModel.lang == .en ? "Classical Translation" : "文言文譯文")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
                     Spacer()
                     Button(action: {
@@ -1001,10 +995,10 @@ struct SutraView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(viewModel.lang == .zh ? "依日期瀏覽" : "Browse by Date")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 13, weight: .medium))
                 Spacer()
                 Button(action: {
-                    withAnimation { viewModel.showHistory = false }
+                    withAnimation(.easeInOut(duration: 0.15)) { viewModel.showHistory = false }
                 }) {
                     HStack(spacing: 4) {
                         Image(systemName: "xmark")
@@ -1023,7 +1017,7 @@ struct SutraView: View {
             if let v = viewModel.verse(on: historyDate) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(viewModel.text.title(v, on: historyDate))
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
                     Text(viewModel.text.firstLine(v))
                         .font(.system(size: 12, design: .serif))
@@ -1032,19 +1026,19 @@ struct SutraView: View {
                 }
                 .padding(8)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
 
             HStack {
                 Button(viewModel.lang == .zh ? "前往此日經文" : "Go to this date") {
-                    withAnimation { viewModel.jumpToDate(historyDate) }
+                    withAnimation(.easeInOut(duration: 0.15)) { viewModel.jumpToDate(historyDate) }
                 }
                 .buttonStyle(.borderedProminent)
 
                 Spacer()
 
                 Button(viewModel.lang == .zh ? "返回今日" : "Return to Today") {
-                    withAnimation { viewModel.reset() }
+                    withAnimation(.easeInOut(duration: 0.15)) { viewModel.reset() }
                 }
                 .buttonStyle(.bordered)
             }
@@ -1053,13 +1047,13 @@ struct SutraView: View {
     }
 
     private var favoritesList: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(viewModel.lang == .zh ? "收藏經文 (\(viewModel.favoriteVerses.count))" : "Favorites (\(viewModel.favoriteVerses.count))")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 13, weight: .medium))
                 Spacer()
                 Button(action: {
-                    withAnimation { viewModel.showFavorites = false }
+                    withAnimation(.easeInOut(duration: 0.15)) { viewModel.showFavorites = false }
                 }) {
                     HStack(spacing: 4) {
                         Image(systemName: "xmark")
@@ -1090,7 +1084,7 @@ struct SutraView: View {
                     } else {
                         ForEach(viewModel.favoriteVerses) { v in
                             Button {
-                                withAnimation { viewModel.show(v) }
+                                withAnimation(.easeInOut(duration: 0.15)) { viewModel.show(v) }
                             } label: {
                                 HStack(alignment: .center, spacing: 8) {
                                     VStack(alignment: .leading, spacing: 2) {
@@ -1100,8 +1094,8 @@ struct SutraView: View {
                                             .truncationMode(.tail)
                                             .foregroundStyle(.primary)
                                         Text(viewModel.text.position(v))
-                                            .font(.system(size: 10))
-                                            .foregroundStyle(.tertiary)
+                                            .font(.system(size: 11))
+                                            .foregroundStyle(.secondary)
                                     }
                                     Spacer()
                                     Image(systemName: "chevron.right")
@@ -1127,10 +1121,10 @@ struct SutraView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Text(viewModel.lang == .zh ? "設定與偏好" : "Settings & Preferences")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 13, weight: .medium))
                     Spacer()
                     Button(action: {
-                        withAnimation { viewModel.showSettings = false }
+                        withAnimation(.easeInOut(duration: 0.15)) { viewModel.showSettings = false }
                     }) {
                         HStack(spacing: 4) {
                             Image(systemName: "xmark")
@@ -1142,9 +1136,9 @@ struct SutraView: View {
                     .foregroundStyle(.secondary)
                 }
 
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text(viewModel.lang == .zh ? "系統與提醒" : "System & Reminders")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
 
                     Toggle(viewModel.lang == .zh ? "開機時自動啟動" : "Launch at Login", isOn: Binding(
@@ -1154,7 +1148,7 @@ struct SutraView: View {
                     .toggleStyle(.checkbox)
                     .font(.caption)
 
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Toggle(viewModel.lang == .zh ? "每日定時提醒" : "Daily reminder", isOn: Binding(
                             get: { viewModel.notifyEnabled },
                             set: { _ in viewModel.toggleNotify() }
@@ -1177,13 +1171,13 @@ struct SutraView: View {
                         }
                     }
                 }
-                .padding(10)
+                .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text(viewModel.lang == .zh ? "文字大小" : "Text Scale")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
 
                     HStack(spacing: 12) {
@@ -1219,13 +1213,13 @@ struct SutraView: View {
                         .foregroundStyle(.secondary)
                     }
                 }
-                .padding(10)
+                .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text(viewModel.lang == .zh ? "每日經典" : "Daily Sutra")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
 
                     Picker("", selection: Binding(
@@ -1242,16 +1236,16 @@ struct SutraView: View {
                     Text(viewModel.lang == .zh
                          ? "每 \(viewModel.verses.count) 天內每段經文各出現一次，之後才會重複；切換後今日經文可能不同。"
                          : "Each of the \(viewModel.verses.count) passages appears once before any repeats. Switching can change today's verse.")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.tertiary)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
                 }
-                .padding(10)
+                .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text(viewModel.lang == .zh ? "外觀" : "Appearance")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
 
                     Picker("", selection: Binding(
@@ -1266,16 +1260,16 @@ struct SutraView: View {
                     .labelsHidden()
 
                     Text(viewModel.lang == .zh ? "選擇淺色、深色，或跟隨系統外觀。" : "Light, dark, or follow the system appearance.")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.tertiary)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
                 }
-                .padding(10)
+                .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text(viewModel.lang == .zh ? "閱讀氛圍" : "Reading Ambience")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
 
                     Toggle(viewModel.lang == .zh ? "溫潤宣紙色調" : "Warm Paper Tint", isOn: Binding(
@@ -1286,17 +1280,17 @@ struct SutraView: View {
                     .font(.caption)
 
                     Text(viewModel.lang == .zh ? "為晨間靜心閱讀增添柔和的宣紙底色，舒緩雙眼。" : "Adds a gentle parchment warmth for quiet morning contemplation.")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.tertiary)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
                         .padding(.leading, 20)
                 }
-                .padding(10)
+                .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text(viewModel.lang == .zh ? "視窗位置" : "Window Placement")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
 
                     Toggle(viewModel.lang == .zh ? "依附於選單列" : "Attach to Menu Bar", isOn: Binding(
@@ -1307,8 +1301,8 @@ struct SutraView: View {
                     .font(.caption)
 
                     Text(viewModel.lang == .zh ? "取消勾選後可自由拖曳視窗至螢幕任意位置，並記憶位置。" : "When unchecked, you can freely drag the window anywhere on screen and remember its position.")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.tertiary)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
                         .padding(.leading, 20)
 
                     if !viewModel.attachToMenubar {
@@ -1323,12 +1317,12 @@ struct SutraView: View {
                         }
                         .buttonStyle(.bordered)
                         .padding(.leading, 20)
-                        .padding(.top, 2)
+                        .padding(.top, 4)
                     }
                 }
-                .padding(10)
+                .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 8) {
                     Button(action: { viewModel.showShortcuts = true }) {
@@ -1350,24 +1344,23 @@ struct SutraView: View {
                             Image(systemName: "power")
                             Text(viewModel.lang == .zh ? "結束 Daily Sutra" : "Quit Daily Sutra")
                             Spacer()
-                            Text("⌘Q").font(.caption2).foregroundStyle(.tertiary)
+                            keycap("⌘Q")
                         }
                         .font(.caption)
-                        .foregroundColor(.red)
                         .padding(.vertical, 4)
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(10)
+                .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .padding(.horizontal, 2)
         }
     }
 
     private var controls: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             // Day navigation
             iconButton("chevron.left", help: viewModel.lang == .zh ? "上一日 (←)" : "Previous verse (←)") {
                 viewModel.prev()
@@ -1375,7 +1368,7 @@ struct SutraView: View {
 
             // Today button with active state indicator
             Button(action: {
-                withAnimation { viewModel.reset() }
+                withAnimation(.easeInOut(duration: 0.15)) { viewModel.reset() }
             }) {
                 HStack(spacing: 4) {
                     Image(systemName: viewModel.isToday ? "calendar" : "calendar.badge.clock")
@@ -1386,7 +1379,7 @@ struct SutraView: View {
                 .foregroundStyle(viewModel.isToday ? .secondary : Color.accentColor)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(viewModel.isToday ? Color.clear : Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .background(viewModel.isToday ? Color.clear : Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .buttonStyle(.plain)
             .help(viewModel.lang == .zh ? "回到今日經文 (T)" : "Return to today (T)")
@@ -1410,13 +1403,13 @@ struct SutraView: View {
             iconButton("bookmark",
                        help: viewModel.lang == .zh ? "收藏經文清單" : "Favorites list",
                        activeColor: viewModel.showFavorites ? Color.accentColor : nil) {
-                withAnimation { viewModel.toggleFavorites() }
+                withAnimation(.easeInOut(duration: 0.15)) { viewModel.toggleFavorites() }
             }
 
             iconButton("calendar",
                        help: viewModel.lang == .zh ? "依日期瀏覽" : "Browse by date",
                        activeColor: viewModel.showHistory ? Color.accentColor : nil) {
-                withAnimation { viewModel.toggleHistory() }
+                withAnimation(.easeInOut(duration: 0.15)) { viewModel.toggleHistory() }
             }
 
             Spacer()
@@ -1436,7 +1429,7 @@ struct SutraView: View {
                 .foregroundStyle(viewModel.copyFeedback ? Color.green : Color.secondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(viewModel.copyFeedback ? Color.green.opacity(0.12) : Color.clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .background(viewModel.copyFeedback ? Color.green.opacity(0.12) : Color.clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .buttonStyle(.plain)
             .help(viewModel.lang == .zh ? "複製經文 (⌘C)" : "Copy formatted verse (⌘C)")
@@ -1478,7 +1471,7 @@ struct SutraView: View {
         ZStack {
             Color.black.opacity(0.3).ignoresSafeArea()
                 .onTapGesture { viewModel.showShortcuts = false }
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Text(viewModel.lang == .zh ? "鍵盤快捷鍵" : "Keyboard Shortcuts")
                         .font(.headline)
@@ -1508,10 +1501,10 @@ struct SutraView: View {
                     .buttonStyle(.borderedProminent)
                 }
             }
-            .padding(18)
+            .padding(16)
             .frame(maxWidth: 300)
             .background(Color(nsColor: .controlBackgroundColor))
-            .cornerRadius(10)
+            .cornerRadius(12)
             .shadow(radius: 12)
         }
     }
@@ -1522,11 +1515,16 @@ struct SutraView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
-            Text(keys)
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+            keycap(keys)
         }
+    }
+
+    private func keycap(_ keys: String) -> some View {
+        Text(keys)
+            .font(.system(size: 11, weight: .medium, design: .monospaced))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
     }
 }
