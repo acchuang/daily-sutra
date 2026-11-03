@@ -127,9 +127,7 @@
     const expl = isZh ? verse.explZh : verse.explEn;
     const meaning = isZh ? verse.meaningZh : verse.meaning;
     const combined = [expl, meaning].filter(Boolean).join(' ');
-    explBox.innerHTML = isZh
-      ? `<strong>解釋：</strong>${combined}`
-      : `<strong>Explanation:</strong> ${combined}`;
+    explBox.textContent = combined;
 
     // Blessing
     const rawBlessing = isZh ? verse.blessingZh : verse.blessing;
@@ -174,7 +172,7 @@
     const expl = isZh ? verse.explZh : verse.explEn;
     const meaning = isZh ? verse.meaningZh : verse.meaning;
     const combinedExpl = [expl, meaning].filter(Boolean).join(' ');
-    const explParagraph = isZh ? `解釋：${combinedExpl}` : `Explanation: ${combinedExpl}`;
+    const explParagraph = combinedExpl;
     const rawBlessing = isZh ? verse.blessingZh : verse.blessing;
     const blessing = rawBlessing
       ? rawBlessing.replace(/\{weekday\}/g, weekdayStr)
