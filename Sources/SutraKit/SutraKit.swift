@@ -110,9 +110,7 @@ public struct VerseText {
     public func explanation(_ v: Verse) -> String {
         let expl = zh ? v.explZh : v.explEn
         let meaning = zh ? v.meaningZh : v.meaning
-        let body = expl + (meaning.isEmpty ? "" : (expl.isEmpty ? "" : " ") + meaning)
-        if body.isEmpty { return "" }
-        return zh ? "解釋：\(body)" : "Explanation: \(body)"
+        return expl + (meaning.isEmpty ? "" : (expl.isEmpty ? "" : " ") + meaning)
     }
 
     /// Credit for the classical text + translation shown in Full Text.

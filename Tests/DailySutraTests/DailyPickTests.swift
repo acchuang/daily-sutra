@@ -151,15 +151,15 @@ final class VerseTextTests: XCTestCase {
 
     func testExplanationMergesMeaning() {
         XCTAssertEqual(VerseText(zh: false).explanation(v),
-                       "Explanation: Help without keeping score. The helper dissolves.")
-        XCTAssertEqual(VerseText(zh: true).explanation(v), "解釋：幫忙不記帳。 助人者亦空。")
+                       "Help without keeping score. The helper dissolves.")
+        XCTAssertEqual(VerseText(zh: true).explanation(v), "幫忙不記帳。 助人者亦空。")
     }
 
-    func testEmptyExplanationYieldsNoLabel() {
+    func testEmptyExplanationYieldsEmptyString() {
         let bare = Verse(index: 1, sutra: "heart", titleZh: "", titleEn: "", zh: "", en: "",
                          verseEn: "x", verseZh: "x", explEn: "", explZh: "", meaning: "", meaningZh: "")
         XCTAssertEqual(VerseText(zh: false).explanation(bare), "",
-                       "no explanation must not render a dangling 'Explanation:' label")
+                       "no explanation and no meaning gives an empty string")
     }
 
     func testHeartVersesAreLabelledAsPassagesNotChapters() {
