@@ -841,18 +841,19 @@ struct SutraView: View {
                     let explanation = viewModel.text.explanation(v)
 
                     // Pull quote
-                    Text(viewModel.text.quote(v))
-                        .font(.system(size: 20 * s, weight: .regular, design: .serif))
-                        .fixedSize(horizontal: false, vertical: true)
-                        .lineSpacing(3)
-                        .textSelection(.enabled)
-                        .accessibilityLabel(viewModel.lang == .zh ? "經文：\(viewModel.text.quote(v))" : "Verse: \(viewModel.text.quote(v))")
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(viewModel.text.quote(v))
+                            .font(.system(size: 20 * s, weight: .regular, design: .serif))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(3)
+                            .textSelection(.enabled)
+                            .accessibilityLabel(viewModel.lang == .zh ? "經文：\(viewModel.text.quote(v))" : "Verse: \(viewModel.text.quote(v))")
 
-                    if let note = viewModel.text.quoteNote {
-                        Text(note)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .padding(.top, -8)
+                        if let note = viewModel.text.quoteNote {
+                            Text(note)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
                     }
 
                     // Unified Explanation paragraph without duplicate label
@@ -1102,7 +1103,7 @@ struct SutraView: View {
                                         .font(.caption2)
                                         .foregroundStyle(.tertiary)
                                 }
-                                .padding(.vertical, 6)
+                                .padding(.vertical, 8)
                                 .padding(.horizontal, 4)
                                 .contentShape(Rectangle())
                             }
@@ -1185,7 +1186,7 @@ struct SutraView: View {
                             Image(systemName: "textformat.size.smaller")
                                 .font(.system(size: 12))
                         }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(.borderless)
                         .help(viewModel.lang == .zh ? "縮小文字" : "Smaller text")
                         .accessibilityLabel(viewModel.lang == .zh ? "縮小文字" : "Smaller text")
 
@@ -1198,7 +1199,7 @@ struct SutraView: View {
                             Image(systemName: "textformat.size.larger")
                                 .font(.system(size: 12))
                         }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(.borderless)
                         .help(viewModel.lang == .zh ? "放大文字" : "Larger text")
                         .accessibilityLabel(viewModel.lang == .zh ? "放大文字" : "Larger text")
 
@@ -1459,7 +1460,7 @@ struct SutraView: View {
             Image(systemName: sf)
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(activeColor ?? .secondary)
-                .frame(width: 28, height: 26)
+                .frame(width: 28, height: 28)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
